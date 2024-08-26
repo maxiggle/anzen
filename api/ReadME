@@ -1,0 +1,39 @@
+# API Server
+
+This is the API server for our project.
+
+## Prerequisites
+
+- Node.js (v18.20 or later)
+
+## Installation
+
+1. Clone the repository
+2. Navigate to the `api` directory
+3. Run `npm install` or `yarn install` to install dependencies
+
+## Scripts
+
+- `npm run build` or `yarn build`: Compile TypeScript to JavaScript
+- `npm run start` or `yarn start`: Start the server using ts-node
+- `npm run dev` or `yarn dev`: Start the server in development mode with nodemon
+
+## Dependencies
+
+- cors: ^2.8.5
+- dotenv: ^16.4.5
+- express: ^4.19.2
+- openai: ^4.56.0
+
+## Dev Dependencies
+
+- @types/cors: ^2.8.17
+- @types/express: ^4.17.13
+- @types/node: ^16.11.12
+- nodemon: ^2.0.15
+- ts-node: ^10.4.0
+- typescript: ^4.5.4
+
+## License
+
+This project is licensed under the MIT License.
