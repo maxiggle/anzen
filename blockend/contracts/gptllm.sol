@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.19;
+pragma solidity 0.8.26;
 import "./interfaces/IOracle.sol";
 
 // @title HRContractAI
 
-contract HRContractGenerator {
+contract HRContractAI {
     struct ContractRun {
         address employee;
         address hr;
@@ -12,18 +12,18 @@ contract HRContractGenerator {
         string employeeReview;
         bool isApproved;
         IOracle.Message[] messages;
-        uint messagesCount;
+        uint256 messagesCount;
     }
 
-    mapping(uint => ContractRun) public contractRuns;
-    uint private contractRunsCount;
+    mapping(uint256 => ContractRun) public contractRuns;
+    uint256 private contractRunsCount;
 
     event ContractGenerated(
         address indexed hr,
         address indexed employee,
-        uint indexed contractId
+        uint256 indexed contractId
     );
-    event ContractReviewed(uint indexed contractId, bool isApproved);
+    event ContractReviewed(uint256 indexed contractId, bool isApproved);
 
     address private owner;
     address public oracleAddress;
@@ -64,12 +64,12 @@ contract HRContractGenerator {
         _;
     }
 
-    modifier onlyHR(uint contractId) {
+    modifier onlyHR(uint256 contractId) {
         require(msg.sender == contractRuns[contractId].hr, "Caller is not HR");
         _;
     }
 
-    modifier onlyEmployee(uint contractId) {
+    modifier onlyEmployee(uint256 contractId) {
         require(
             msg.sender == contractRuns[contractId].employee,
             "Caller is not the employee"
@@ -85,14 +85,16 @@ contract HRContractGenerator {
     function generateContract(
         address employee,
         string memory employeeTerms
-    ) public returns (uint) {
+    ) public returns (uint256) {
+        contractRunsCount += 1;
         ContractRun storage run = contractRuns[contractRunsCount];
 
         run.employee = employee;
         run.hr = msg.sender;
         run.isApproved = false;
 
-        IOracle.Message memory newMessage = createNewMessage(
+        createNewMessage(
+            run,
             "user",
             string(
                 abi.encodePacked(
@@ -101,20 +103,16 @@ contract HRContractGenerator {
                 )
             )
         );
-        run.messages.push(newMessage);
         run.messagesCount = 1;
 
-        uint currentId = contractRunsCount;
-        contractRunsCount = contractRunsCount + 1;
+        IOracle(oracleAddress).createOpenAiLlmCall(contractRunsCount, config);
+        emit ContractGenerated(msg.sender, employee, contractRunsCount);
 
-        IOracle(oracleAddress).createOpenAiLlmCall(currentId, config);
-        emit ContractGenerated(msg.sender, employee, currentId);
-
-        return currentId;
+        return contractRunsCount;
     }
 
     function onOracleOpenAiLlmResponse(
-        uint runId,
+        uint256 runId,
         IOracle.OpenAiResponse memory response,
         string memory errorMessage
     ) public onlyOracle {
@@ -122,24 +120,15 @@ contract HRContractGenerator {
 
         if (compareStrings(errorMessage, "")) {
             run.contractContent = response.content;
-            IOracle.Message memory newMessage = createNewMessage(
-                "assistant",
-                response.content
-            );
-            run.messages.push(newMessage);
-            run.messagesCount++;
+            createNewMessage(run, "assistant", response.content);
         } else {
-            IOracle.Message memory newMessage = createNewMessage(
-                "assistant",
-                errorMessage
-            );
-            run.messages.push(newMessage);
-            run.messagesCount++;
+            createNewMessage(run, "assistant", errorMessage);
         }
+        run.messagesCount++;
     }
 
     function reviewContract(
-        uint contractId,
+        uint256 contractId,
         string memory query
     ) public onlyEmployee(contractId) {
         ContractRun storage run = contractRuns[contractId];
@@ -153,15 +142,14 @@ contract HRContractGenerator {
             )
         );
 
-        IOracle.Message memory newMessage = createNewMessage("user", prompt);
-        run.messages.push(newMessage);
+        createNewMessage(run, "user", prompt);
         run.messagesCount++;
 
         IOracle(oracleAddress).createOpenAiLlmCall(contractId, config);
     }
 
     function approveContract(
-        uint contractId,
+        uint256 contractId,
         bool approval
     ) public onlyEmployee(contractId) {
         ContractRun storage run = contractRuns[contractId];
@@ -170,28 +158,32 @@ contract HRContractGenerator {
     }
 
     function getContractContent(
-        uint contractId
+        uint256 contractId
     ) public view returns (string memory) {
         return contractRuns[contractId].contractContent;
     }
 
     function getMessageHistory(
-        uint contractId
+        uint256 contractId
     ) public view returns (IOracle.Message[] memory) {
         return contractRuns[contractId].messages;
     }
 
     function createNewMessage(
+        ContractRun storage run,
         string memory role,
         string memory content
-    ) private pure returns (IOracle.Message memory) {
-        IOracle.Message memory newMessage = IOracle.Message({
-            role: role,
-            content: new IOracle.Content[](1)
-        });
+    ) private {
+        run.messages.push();
+        IOracle.Message storage newMessage = run.messages[
+            run.messages.length - 1
+        ];
+
+        newMessage.role = role;
+
+        newMessage.content.push();
         newMessage.content[0].contentType = "text";
         newMessage.content[0].value = content;
-        return newMessage;
     }
 
     function compareStrings(
