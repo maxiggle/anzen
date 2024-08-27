@@ -7,15 +7,7 @@ if (process.env.PRIVATE_KEY_GALADRIEL) {
 }
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: "0.8.19",
-  settings: {
-    viaIR: true,
-    optimizer: {
-      enabled: true,
-      runs: 200
-    },
-    viaIR: true 
-  },
+  solidity: "0.8.26",
    galadriel: {
       chainId: 696969,
       url: "https://devnet.galadriel.com/",
