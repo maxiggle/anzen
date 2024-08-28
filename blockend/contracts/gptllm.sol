@@ -87,12 +87,21 @@ contract HRContractAI {
         string memory employeeTerms
     ) public returns (uint256) {
         contractRunsCount += 1;
-        ContractRun storage run = contractRuns[contractRunsCount];
+        uint256 newContractId = contractRunsCount;
+        ContractRun storage run = contractRuns[newContractId];
 
         run.employee = employee;
         run.hr = msg.sender;
         run.isApproved = false;
 
+        // Clear previous content if any
+        run.contractContent = "";
+
+        // Clear previous messages
+        delete run.messages;
+        run.messagesCount = 0;
+
+        // Create new message for contract generation
         createNewMessage(
             run,
             "user",
@@ -103,12 +112,12 @@ contract HRContractAI {
                 )
             )
         );
-        run.messagesCount = 1;
 
-        IOracle(oracleAddress).createOpenAiLlmCall(contractRunsCount, config);
-        emit ContractGenerated(msg.sender, employee, contractRunsCount);
+        // Prepare the Oracle request
+        IOracle(oracleAddress).createOpenAiLlmCall(newContractId, config);
+        emit ContractGenerated(msg.sender, employee, newContractId);
 
-        return contractRunsCount;
+        return newContractId;
     }
 
     function onOracleOpenAiLlmResponse(

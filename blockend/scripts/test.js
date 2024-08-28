@@ -353,7 +353,7 @@ const contractABI =  [
     "type": "function"
   }
 ]
-const contractAddress = "0x1663813707EEd9973d3620e53B532D739B84C3F0"; 
+const contractAddress = "0x3112D264DEE05031A89663135107119103282e1e"; 
 
 // Initialize contract instance
 const contract = new ethers.Contract(contractAddress, contractABI, wallet);
@@ -392,9 +392,9 @@ async function getMessageHistory(contractId) {
 async function main() {
     // Example interaction
     const employeeAddress = "0xb8FCeb74C6c7e9DEaAcE41060747670d43475997";
-    const employeeTerms = "Standard employment terms and benefit section";
+    const employeeTerms = "Standard employment including health insurance, 401k, and more and employer name should be Gef and name of company should be Variance";
     
-    await generateContract(employeeAddress, employeeTerms);
+    // await generateContract(employeeAddress, employeeTerms);
     // await reviewContract(1, "Please review the benefits section.");
     // await approveContract(1, true);
     await getContractContent(1);
