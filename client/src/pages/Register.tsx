@@ -4,8 +4,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 const Register: React.FC = () => {
   const navigate = useNavigate(); // Replaces useHistory
   const location = useLocation();
-  const accountType = new URLSearchParams(location.search).get("type");
   const [email, setEmail] = useState<string>("");
+  const accountType = new URLSearchParams(location.search).get("type");
   const [password, setPassword] = useState<string>("");
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
