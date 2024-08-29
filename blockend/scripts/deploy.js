@@ -5,7 +5,7 @@ const oracleAddress = "0x68EC9556830AD097D661Df2557FBCeC166a0A075";
 
 async function main() {
 
-  const lock = await  ethers.deployContract("HRContractGenerator", [oracleAddress], {});
+  const lock = await  ethers.deployContract("HRContractAI", [oracleAddress], {});
 
   await lock.waitForDeployment();
 

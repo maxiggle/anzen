@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.19;
+pragma solidity 0.8.26;
 import "./interfaces/IOracle.sol";
 
 // @title HRContractAI
 
-contract HRContractGenerator {
+contract HRContractAI {
     struct ContractRun {
         address employee;
         address hr;
@@ -12,18 +12,18 @@ contract HRContractGenerator {
         string employeeReview;
         bool isApproved;
         IOracle.Message[] messages;
-        uint messagesCount;
+        uint256 messagesCount;
     }
 
-    mapping(uint => ContractRun) public contractRuns;
-    uint private contractRunsCount;
+    mapping(uint256 => ContractRun) public contractRuns;
+    uint256 private contractRunsCount;
 
     event ContractGenerated(
         address indexed hr,
         address indexed employee,
-        uint indexed contractId
+        uint256 indexed contractId
     );
-    event ContractReviewed(uint indexed contractId, bool isApproved);
+    event ContractReviewed(uint256 indexed contractId, bool isApproved);
 
     address private owner;
     address public oracleAddress;
@@ -39,18 +39,18 @@ contract HRContractGenerator {
 
         config = IOracle.OpenAiRequest({
             model: "gpt-4-turbo-preview",
-            frequencyPenalty: 21,
-            logitBias: "",
-            maxTokens: 2000,
-            presencePenalty: 21,
+            frequencyPenalty: 21, // > 20 for null
+            logitBias: "", // empty str for null
+            maxTokens: 1000, // 0 for null
+            presencePenalty: 21, // > 20 for null
             responseFormat: '{"type":"text"}',
-            seed: 0,
-            stop: "",
-            temperature: 7,
-            topP: 101,
-            tools: "[]",
-            toolChoice: "none",
-            user: ""
+            seed: 0, // null
+            stop: "", // null
+            temperature: 10, // Example temperature (scaled up, 10 means 1.0), > 20 means null
+            topP: 101, // Percentage 0-100, > 100 means null
+            tools: '[{"type":"function","function":{"name":"web_search","description":"Search the internet","parameters":{"type":"object","properties":{"query":{"type":"string","description":"Search query"}},"required":["query"]}}},{"type":"function","function":{"name":"code_interpreter","description":"Evaluates python code in a sandbox environment. The environment resets on every execution. You must send the whole script every time and print your outputs. Script should be pure python code that can be evaluated. It should be in python format NOT markdown. The code should NOT be wrapped in backticks. All python packages including requests, matplotlib, scipy, numpy, pandas, etc are available. Output can only be read from stdout, and stdin. Do not use things like plot.show() as it will not work. print() any output and results so you can capture the output.","parameters":{"type":"object","properties":{"code":{"type":"string","description":"The pure python script to be evaluated. The contents will be in main.py. It should not be in markdown format."}},"required":["code"]}}}]',
+            toolChoice: "auto", // "none" or "auto"
+            user: "" // null
         });
     }
 
@@ -64,12 +64,12 @@ contract HRContractGenerator {
         _;
     }
 
-    modifier onlyHR(uint contractId) {
+    modifier onlyHR(uint256 contractId) {
         require(msg.sender == contractRuns[contractId].hr, "Caller is not HR");
         _;
     }
 
-    modifier onlyEmployee(uint contractId) {
+    modifier onlyEmployee(uint256 contractId) {
         require(
             msg.sender == contractRuns[contractId].employee,
             "Caller is not the employee"
@@ -85,14 +85,25 @@ contract HRContractGenerator {
     function generateContract(
         address employee,
         string memory employeeTerms
-    ) public returns (uint) {
-        ContractRun storage run = contractRuns[contractRunsCount];
+    ) public returns (uint256) {
+        contractRunsCount += 1;
+        uint256 newContractId = contractRunsCount;
+        ContractRun storage run = contractRuns[newContractId];
 
         run.employee = employee;
         run.hr = msg.sender;
         run.isApproved = false;
 
-        IOracle.Message memory newMessage = createNewMessage(
+        // Clear previous content if any
+        run.contractContent = "";
+
+        // Clear previous messages
+        delete run.messages;
+        run.messagesCount = 0;
+
+        // Create new message for contract generation
+        createNewMessage(
+            run,
             "user",
             string(
                 abi.encodePacked(
@@ -101,20 +112,16 @@ contract HRContractGenerator {
                 )
             )
         );
-        run.messages.push(newMessage);
-        run.messagesCount = 1;
 
-        uint currentId = contractRunsCount;
-        contractRunsCount = contractRunsCount + 1;
+        // Prepare the Oracle request
+        IOracle(oracleAddress).createOpenAiLlmCall(newContractId, config);
+        emit ContractGenerated(msg.sender, employee, newContractId);
 
-        IOracle(oracleAddress).createOpenAiLlmCall(currentId, config);
-        emit ContractGenerated(msg.sender, employee, currentId);
-
-        return currentId;
+        return newContractId;
     }
 
     function onOracleOpenAiLlmResponse(
-        uint runId,
+        uint256 runId,
         IOracle.OpenAiResponse memory response,
         string memory errorMessage
     ) public onlyOracle {
@@ -122,24 +129,15 @@ contract HRContractGenerator {
 
         if (compareStrings(errorMessage, "")) {
             run.contractContent = response.content;
-            IOracle.Message memory newMessage = createNewMessage(
-                "assistant",
-                response.content
-            );
-            run.messages.push(newMessage);
-            run.messagesCount++;
+            createNewMessage(run, "assistant", response.content);
         } else {
-            IOracle.Message memory newMessage = createNewMessage(
-                "assistant",
-                errorMessage
-            );
-            run.messages.push(newMessage);
-            run.messagesCount++;
+            createNewMessage(run, "assistant", errorMessage);
         }
+        run.messagesCount++;
     }
 
     function reviewContract(
-        uint contractId,
+        uint256 contractId,
         string memory query
     ) public onlyEmployee(contractId) {
         ContractRun storage run = contractRuns[contractId];
@@ -153,15 +151,14 @@ contract HRContractGenerator {
             )
         );
 
-        IOracle.Message memory newMessage = createNewMessage("user", prompt);
-        run.messages.push(newMessage);
+        createNewMessage(run, "user", prompt);
         run.messagesCount++;
 
         IOracle(oracleAddress).createOpenAiLlmCall(contractId, config);
     }
 
     function approveContract(
-        uint contractId,
+        uint256 contractId,
         bool approval
     ) public onlyEmployee(contractId) {
         ContractRun storage run = contractRuns[contractId];
@@ -170,28 +167,32 @@ contract HRContractGenerator {
     }
 
     function getContractContent(
-        uint contractId
+        uint256 contractId
     ) public view returns (string memory) {
         return contractRuns[contractId].contractContent;
     }
 
     function getMessageHistory(
-        uint contractId
+        uint256 contractId
     ) public view returns (IOracle.Message[] memory) {
         return contractRuns[contractId].messages;
     }
 
     function createNewMessage(
+        ContractRun storage run,
         string memory role,
         string memory content
-    ) private pure returns (IOracle.Message memory) {
-        IOracle.Message memory newMessage = IOracle.Message({
-            role: role,
-            content: new IOracle.Content[](1)
-        });
+    ) private {
+        run.messages.push();
+        IOracle.Message storage newMessage = run.messages[
+            run.messages.length - 1
+        ];
+
+        newMessage.role = role;
+
+        newMessage.content.push();
         newMessage.content[0].contentType = "text";
         newMessage.content[0].value = content;
-        return newMessage;
     }
 
     function compareStrings(
