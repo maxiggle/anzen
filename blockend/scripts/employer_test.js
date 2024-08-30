@@ -310,7 +310,6 @@ async function generateContract(employeeAddress, employeeTerms) {
         }
     }).filter(e => e !== null);
     
-    // Get the ContractGenerated event
   console.log("ContractGenerated event: ", events);
   generatedId = events[0].args.contractId;
   console.log("Contract ID: ", generatedId);

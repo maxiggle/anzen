@@ -371,8 +371,8 @@ async function getReviewContent(reviewId) {
     
 }
 async function main() {
-  const id =  await reviewContract(2, "review this contract and explain all the terms in details");
-  const content = await getReviewContent(id);
+//   const id =  await reviewContract(2, "review this contract and explain all the terms in details");
+  const content = await getReviewContent(1);
   console.log("reviewed content:", content)
 }
 
