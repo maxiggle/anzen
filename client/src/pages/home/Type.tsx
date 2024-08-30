@@ -10,13 +10,13 @@ const AccountType: React.FC = () => {
         </h2>
         <div className="space-y-4">
           <Link
-            to="/register?type=company"
+            to="/register/company"
             className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded text-center"
           >
             Register as a Company
           </Link>
           <Link
-            to="/register?type=contractor"
+            to="/register/contractor"
             className="block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded text-center"
           >
             Register as a Contractor

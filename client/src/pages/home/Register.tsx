@@ -1,19 +1,23 @@
-import React, { useState, FormEvent } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import useForm from "../../hooks/useForm";
 
 const Register: React.FC = () => {
-  const navigate = useNavigate(); // Replaces useHistory
-  const location = useLocation();
-  const [email, setEmail] = useState<string>("");
-  const accountType = new URLSearchParams(location.search).get("type");
-  const [password, setPassword] = useState<string>("");
+  const navigate = useNavigate();
+  const { type: accountType } = useParams<{ type: string }>();
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // Add your registration logic here
-    console.log("Registered as", accountType, "with email:", email);
-    navigate("/dashboard"); // Replaces history.push
-  };
+  const { form, setFormValue, submit } = useForm({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    action: async ({ email }) => {
+      return Promise.resolve(email);
+    },
+    success() {
+      navigate("/dashboard");
+    },
+  });
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -31,7 +35,7 @@ const Register: React.FC = () => {
             Register as{" "}
             {accountType === "company" ? "a Company" : "a Contractor"}
           </h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={submit} className="space-y-4">
             <div>
               <label htmlFor="email" className="block mb-1 font-medium">
                 Email
@@ -39,8 +43,8 @@ const Register: React.FC = () => {
               <input
                 type="email"
                 id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={form.email}
+                onChange={setFormValue}
                 className="w-full px-3 py-2 border rounded-md"
                 required
               />
@@ -52,8 +56,8 @@ const Register: React.FC = () => {
               <input
                 type="password"
                 id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={form.password}
+                onChange={setFormValue}
                 className="w-full px-3 py-2 border rounded-md"
                 required
               />
