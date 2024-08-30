@@ -1,9 +1,9 @@
+const { ethers } = require('ethers');
 require('dotenv').config();
 
-const { ethers } = require('ethers');
 
 
-const contractABI = [
+const employerAbi = [ 
   {
     "inputs": [
       {
@@ -45,25 +45,6 @@ const contractABI = [
     "inputs": [
       {
         "indexed": true,
-        "internalType": "uint256",
-        "name": "contractId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "isApproved",
-        "type": "bool"
-      }
-    ],
-    "name": "ContractReviewed",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
         "internalType": "address",
         "name": "newOracleAddress",
         "type": "address"
@@ -71,24 +52,6 @@ const contractABI = [
     ],
     "name": "OracleAddressUpdated",
     "type": "event"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "contractId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "approval",
-        "type": "bool"
-      }
-    ],
-    "name": "approveContract",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
   },
   {
     "inputs": [
@@ -113,11 +76,6 @@ const contractABI = [
       {
         "internalType": "string",
         "name": "contractContent",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "employeeReview",
         "type": "string"
       },
       {
@@ -167,25 +125,6 @@ const contractABI = [
       }
     ],
     "name": "getContractContent",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "contractId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getLatestReviewResponse",
     "outputs": [
       {
         "internalType": "string",
@@ -335,24 +274,6 @@ const contractABI = [
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "contractId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "query",
-        "type": "string"
-      }
-    ],
-    "name": "reviewContract",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "newOracleAddress",
         "type": "address"
@@ -363,68 +284,58 @@ const contractABI = [
     "stateMutability": "nonpayable",
     "type": "function"
   }
-]
-// Load environment variables
+];
+
+
+
 const PRIVATE_KEY = process.env.PRIVATE_KEY_GALADRIEL;
+const contractAddress = "0xa1572008d63A923F4Bccd9703933FC9D5F663d5d";
 const RPC_URL = "https://devnet.galadriel.com/"
-
-// Initialize provider and signer
 const provider = new ethers.JsonRpcProvider(RPC_URL);
-const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
+const wallet = new ethers.Wallet(PRIVATE_KEY, provider); 
+const employeeAddress = "0xb8FCeb74C6c7e9DEaAcE41060747670d43475997";
 
-// Contract ABI and address
+const employerContract = new ethers.Contract(contractAddress, employerAbi, wallet);
 
-const contractAddress = "0x14D14a3499099c73C67Be763F8C6aC6E9472E8eE"; 
-
-// Initialize contract instance
-const contract = new ethers.Contract(contractAddress, contractABI, wallet);
-
+let generatedId = 0;
 async function generateContract(employeeAddress, employeeTerms) {
-    const tx = await contract.generateContract(employeeAddress, employeeTerms);
-    await tx.wait();
-    console.log(`Contract generated with ID: ${tx.value.toString()}`);
+    const tx = await employerContract.generateContract(employeeAddress, employeeTerms);
+    const receipt = await tx.wait();
+
+    const events = receipt.logs.map((log) => {
+        try {
+            return employerContract.interface.parseLog(log);
+        } catch (e) {
+            return null; 
+        }
+    }).filter(e => e !== null);
+    
+    // Get the ContractGenerated event
+  console.log("ContractGenerated event: ", events);
+  generatedId = events[0].args.contractId;
+  console.log("Contract ID: ", generatedId);
 }
 
-async function reviewContract(contractId, query) {
-    const tx = await contract.reviewContract(contractId, query);
-    await tx.wait();
-    console.log(`Contract with ID ${contractId} reviewed.`);
-}
 
-async function approveContract(contractId, approval) {
-    const tx = await contract.approveContract(contractId, approval);
-    await tx.wait();
-    console.log(`Contract with ID ${contractId} approval status: ${approval}`);
-}
 
 async function getContractContent(contractId) {
-    const content = await contract.getContractContent(contractId);
+    const content = await employerContract.getContractContent(contractId);
     console.log(`Contract Content for ID ${contractId}: ${content}`);
 }
 
 async function getMessageHistory(contractId) {
-    const messages = await contract.getMessageHistory(contractId);
+    const messages = await employerContract.getMessageHistory(contractId);
     console.log(`Message History for Contract ID ${contractId}:`);
     messages.forEach((message, index) => {
         console.log(`Message ${index + 1}: Role - ${message.role}, Content - ${message.content[0].value}`);
     });
 }
 
-async function getReviewResponse(contractId){
-  const messages = await contract.getLatestReviewResponse(contractId);
- console.log(`Review Response ${messages}:`);
-}
-
 async function main() {
-    // Example interaction
-    const employeeAddress = "0xb8FCeb74C6c7e9DEaAcE41060747670d43475997";
-    const employeeTerms = "Standard employment including health insurance, 401k, and more and employer name should be Gef and name of company should be Variance";
-    // await generateContract(employeeAddress, employeeTerms);
-   await getContractContent(1);
-  //  await reviewContract(1, "Explain every clause in the contract");
-  //  await getReviewResponse(1);
-    // await approveContract(1, false);
-    
+    // await generateContract(employeeAddress, "Position: Software Engineer; Salary: $100,000; Start Date: 2024-09-01")
+    // console.log("Generated ID: ", generatedId);
+    await getContractContent(2);
+    // await getMessageHistory(1);
     
 }
 
