@@ -133,6 +133,16 @@ contract EmployeeContract {
         review.messagesCount++;
     }
 
+    function viewGeneratedContract(
+        uint256 contractId
+    ) public view returns (string memory) {
+        string memory contractContent = EmployerContract(
+            employerContractAddress
+        ).getContractContent(contractId);
+
+        return contractContent;
+    }
+
     function approveContract(
         uint256 reviewId,
         bool approval
