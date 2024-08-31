@@ -4,10 +4,29 @@ import Button from "../../components/UI/Button";
 import DataTable from "../../components/UI/DataTable";
 import Notification from "../../components/UI/Notification";
 
-import { Doughnut } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Doughnut, Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+} from "chart.js";
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title
+);
 
 export default function Index() {
   return (
@@ -31,6 +50,55 @@ export default function Index() {
 
       <section className="w-full mt-8 flex md:flex-row gap-8">
         <div className="md:w-2/3">
+          <div className="bg-white p-8 shadow rounded-lg mb-8">
+            <h3 className="font-semibold text-xl  mb-6">Invoice Statistics</h3>
+            <div className="w-full h-64">
+              <Line
+                data={{
+                  labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+                  datasets: [
+                    {
+                      label: "Cleared Invoices",
+                      data: [65, 59, 80, 81, 56, 55],
+                      fill: false,
+                      borderColor: "#8E24AA",
+                      tension: 0.1,
+                      backgroundColor: "#8E24AA",
+                    },
+                    {
+                      label: "Uncleared Invoices",
+                      data: [28, 48, 40, 19, 86, 27],
+                      fill: false,
+                      borderColor: "#3949AB",
+                      tension: 0.1,
+                      backgroundColor: "#3949AB",
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                    },
+                  },
+                  plugins: {
+                    legend: {
+                      position: "bottom",
+                      labels: {
+                        color: "#333",
+                        font: {
+                          size: 12,
+                        },
+                      },
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+
           <DataTable
             label={"Loan Transactions"}
             left={
@@ -56,16 +124,18 @@ export default function Index() {
           />
         </div>
         <div className="md:w-1/3 bg-white p-8 shadow rounded-lg">
-          <h3 className="font-semibold text-xl mb-4">Loan Distribution</h3>
+          <h3 className="font-semibold text-xl text-center mb-6">
+            Contracts Statistics
+          </h3>
           <div className="w-full h-64">
             <Doughnut
               data={{
-                labels: ["Paid", "Pending", "Overdue"],
+                labels: ["Signed", "Reviewed", "Rejected"],
                 datasets: [
                   {
                     data: [300, 50, 100],
-                    backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
-                    hoverBackgroundColor: ["#45a049", "#e6ac00", "#da190b"],
+                    backgroundColor: ["#8E24AA", "#5E35B1", "#3949AB"],
+                    hoverBackgroundColor: ["#6A1B9A", "#4527A0", "#283593"],
                   },
                 ],
               }}

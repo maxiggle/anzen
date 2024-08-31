@@ -104,7 +104,10 @@ export default function Navbar() {
                 </ELink>
               </li>
               <li>
-                <button className="dashboard__nav_item hover:!bg-red-200 hover:!text-red-900 !text-red-600 w-full">
+                <button
+                  onClick={() => (location.href = "/")}
+                  className="dashboard__nav_item hover:!bg-red-200 hover:!text-red-900 !text-red-600 w-full"
+                >
                   <span className="material-symbols-outlined -mt-[2px]">
                     move_item
                   </span>
