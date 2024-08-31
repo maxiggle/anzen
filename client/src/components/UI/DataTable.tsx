@@ -77,7 +77,7 @@ export default function DataTable({
         </div>
       )}
       <table className="w-full rounded-md">
-        <thead className="bg-purple-200 rounded-md">
+        <thead className="bg-gray-200 rounded-md">
           <tr className="py-2">
             {headers.map((header, index) => (
               <th

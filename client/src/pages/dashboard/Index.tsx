@@ -4,6 +4,11 @@ import Button from "../../components/UI/Button";
 import DataTable from "../../components/UI/DataTable";
 import Notification from "../../components/UI/Notification";
 
+import { Doughnut } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
+
 export default function Index() {
   return (
     <div>
@@ -24,7 +29,7 @@ export default function Index() {
         </div>
       </Alert>
 
-      <section className="w-full mt-3">
+      <section className="w-full mt-8 flex md:flex-row gap-8">
         <div className="md:w-2/3">
           <DataTable
             label={"Loan Transactions"}
@@ -50,7 +55,38 @@ export default function Index() {
             headers={["SN", "Date", "Amount", "Status"]}
           />
         </div>
-        <div className="md:w-1/3"></div>
+        <div className="md:w-1/3 bg-white p-8 shadow rounded-lg">
+          <h3 className="font-semibold text-xl mb-4">Loan Distribution</h3>
+          <div className="w-full h-64">
+            <Doughnut
+              data={{
+                labels: ["Paid", "Pending", "Overdue"],
+                datasets: [
+                  {
+                    data: [300, 50, 100],
+                    backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
+                    hoverBackgroundColor: ["#45a049", "#e6ac00", "#da190b"],
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: "bottom",
+                    labels: {
+                      color: "#333",
+                      font: {
+                        size: 12,
+                      },
+                    },
+                  },
+                },
+              }}
+            />
+          </div>
+        </div>
       </section>
     </div>
   );
