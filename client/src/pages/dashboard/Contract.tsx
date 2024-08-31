@@ -1,7 +1,7 @@
 import Button from "../../components/UI/Button";
 import DataTable from "../../components/UI/DataTable";
 import { FaPlus } from "react-icons/fa";
-import Model from "../../components/UI/Model";
+import Model from "../../components/UI/Modal";
 import { useState } from "react";
 import CreateContract from "../../components/Modals/CreateContract";
 

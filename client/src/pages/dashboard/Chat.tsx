@@ -1,4 +1,5 @@
 import Button from "../../components/UI/Button";
+import EmojiSelect from "../../components/UI/EmojiSelect";
 
 export default function Chat() {
   return (
@@ -14,30 +15,46 @@ export default function Chat() {
 
       <div className="flex h-[calc(100vh-200px)]">
         {/* Client list */}
-        <div className="w-1/4 bg-gray-100 overflow-y-auto">
-          <h3 className="text-lg font-semibold p-4">Clients</h3>
-          <ul>
+        <div className="w-1/4  border rounded-lg bg-white border-gray-200 mr-4 overflow-y-auto">
+          <h3 className="text-lg font-semibold p-4 border-b border-gray-200">
+            Clients
+          </h3>
+          <ul className="divide-y divide-gray-200">
             {["Client 1", "Client 2", "Client 3"].map((client, index) => (
-              <li key={index} className="p-4 hover:bg-gray-200 cursor-pointer">
-                {client}
+              <li
+                key={index}
+                className="p-4 hover:bg-gray-200 cursor-pointer transition duration-150 ease-in-out flex items-center"
+              >
+                <div className="w-8 h-8 bg-blue-500 rounded-full mr-3 flex items-center justify-center text-white font-semibold border border-blue-600">
+                  {client.charAt(0)}
+                </div>
+                <span>{client}</span>
               </li>
             ))}
           </ul>
         </div>
 
         {/* Chat area */}
-        <div className="w-3/4 flex flex-col">
+        <div className="w-3/4 flex bg-white border rounded-lg flex-col">
           {/* Messages */}
-          <div className="flex-grow p-4 overflow-y-auto">
+          <div className="flex-grow p-4  overflow-y-auto">
             {/* Sample messages */}
             <div className="mb-4">
-              <div className="bg-blue-100 p-2 rounded-lg inline-block">
-                Hello! How can I help you today?
+              <div className="bg-blue-100 p-3 rounded-lg inline-block max-w-3/4 border border-blue-200 relative">
+                <p>Hello! How can I help you today?</p>
+                <div className="absolute left-0 top-1/2 transform -translate-x-2 -translate-y-1/2 w-0 h-0 border-t-8 border-r-8 border-b-8 border-blue-100 border-r-transparent border-b-transparent"></div>
+                <div className="text-xs text-gray-500 mt-1">
+                  10:30 AM | <span className="text-blue-500">●</span>
+                </div>
               </div>
             </div>
             <div className="mb-4 text-right">
-              <div className="bg-green-100 p-2 rounded-lg inline-block">
-                I have a question about my contract.
+              <div className="bg-green-100 p-3 rounded-lg inline-block max-w-3/4 border border-green-200 relative">
+                <p>I have a question about my contract.</p>
+                <div className="absolute right-0 top-1/2 transform translate-x-2 -translate-y-1/2 w-0 h-0 border-t-8 border-l-8 border-b-8 border-green-100 border-l-transparent border-b-transparent"></div>
+                <div className="text-xs text-gray-500 mt-1">
+                  10:32 AM | <span className="text-green-500">●●</span>
+                </div>
               </div>
             </div>
           </div>
@@ -61,22 +78,13 @@ export default function Chat() {
                   />
                 </svg>
               </button>
-              <button className="mr-2 text-gray-500 hover:text-gray-700">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </button>
+              <div className="mr-2 mt-1 text-gray-500 hover:text-gray-700">
+                <EmojiSelect
+                  onEmojiSelect={(e) => {
+                    console.log(e);
+                  }}
+                />
+              </div>
               <input
                 type="text"
                 placeholder="Type your message..."

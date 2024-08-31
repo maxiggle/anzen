@@ -1,12 +1,23 @@
 import React, { ReactNode, useEffect, useState } from "react";
 import { clsx } from "../../utils";
 
+const sizes = {
+  "3xl": "max-w-3xl",
+  "2xl": "max-w-2xl",
+  xl: "max-w-xl",
+  lg: "max-w-lg",
+  md: "max-w-md",
+  sm: "max-w-sm",
+  xs: "max-w-xs",
+};
 interface IProps {
   children: ReactNode;
   setState: React.Dispatch<boolean>;
   state: boolean;
+  size?: keyof typeof sizes;
 }
-export default function Model({ state, setState, children }: IProps) {
+
+export default function Model({ state, setState, children, size }: IProps) {
   const [backdrop, setBackdrop] = useState(state);
 
   useEffect(() => {
@@ -32,7 +43,13 @@ export default function Model({ state, setState, children }: IProps) {
           className="backdrop-blur absolute inset-0 bg-black bg-opacity-10"
         />
       )}
-      {backdrop && <div className="relative z-10">{children}</div>}
+      {backdrop && (
+        <div
+          className={clsx(["relative z-10 w-full p-3", sizes[size || "md"]])}
+        >
+          {children}
+        </div>
+      )}
     </div>
   );
 }
