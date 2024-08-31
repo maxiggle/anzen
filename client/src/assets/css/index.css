@@ -132,3 +132,11 @@
 .dev * {
   outline: 1px solid rgba(255, 0, 0, 0.384) !important;
 }
+
+.dashboard__nav_item {
+  @apply flex items-center gap-2 text-gray-600 font-semibold rounded-md px-4 py-3 text-sm uppercase tracking-wider hover:!bg-purple-200 hover:!text-purple-800 active:!bg-indigo-300;
+}
+
+.dashboard__nav_item.active-link {
+  @apply bg-indigo-100/80 text-purple-900;
+}
