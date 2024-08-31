@@ -84,7 +84,7 @@ export default function DataTable({
                 className={clsx([
                   index === 0 && "rounded-tl-md",
                   index === headers.length - 1 && "rounded-tr-md",
-                  "py-2 outline outline-purple-300 cursor-pointer",
+                  "py-3 cursor-pointer !font-semibold",
                 ])}
                 key={index}
                 onClick={() => handleSort(header.toLowerCase())}
@@ -105,7 +105,7 @@ export default function DataTable({
                 .map((header, cellIndex) => (
                   <td
                     className={clsx([
-                      "text-center py-2 outline outline-purple-300",
+                      "text-center py-3 text-gray-700 bg-white",
                       rowIndex + 1 === sortedData.length &&
                         cellIndex + 1 === headers.length &&
                         "rounded-br-md",
