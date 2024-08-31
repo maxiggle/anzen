@@ -78,7 +78,7 @@ export default function Navbar() {
               Login
             </button>
             <Link
-              to="/register"
+              to="/type"
               className="bg-blue-500 hover:bg-blue-600 rounded-[30px] mr-4 md:mr-auto text-white font-bold py-2 px-4  "
             >
               Register

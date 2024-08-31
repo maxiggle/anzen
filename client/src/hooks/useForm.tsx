@@ -22,6 +22,8 @@ function useForm<T extends Record<string, string>>({
     >
   ) => {
     const { name, value } = e.target;
+    console.log({ name, value });
+
     setValues({
       ...values,
       [name]: value,
