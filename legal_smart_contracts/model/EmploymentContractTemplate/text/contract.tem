@@ -1,0 +1,5 @@
+This Employment Contract is made on {{contract.startDate}} between {{contract.employer.participantName}}, referred to as the "Employer", and {{contract.employee.participantName}}, referred to as the "Employee".
+
+The Employee agrees to work as a {{contract.jobTitle}} starting from {{contract.startDate}} until {{contract.endDate}}. The Employee will be compensated with a salary of {{contract.salary}} {{contract.paymentFrequency}}.
+
+Both parties agree to the terms and conditions specified in this contract.

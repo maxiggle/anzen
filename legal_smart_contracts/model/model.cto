@@ -1,0 +1,53 @@
+namespace org.datasurge.employment
+
+import org.accordproject.runtime.*
+import org.accordproject.contract.*
+
+
+
+
+
+// Model for the contract
+
+participant Party identified by participantAddress {
+  o String participantAddress
+  o String participantName
+  o String participantRole
+
+}
+
+
+
+asset EmploymentContractModel extends Contract{
+  o DateTime startDate
+  o DateTime endDate
+  o Party employer
+  o Party employee
+  o String jobTitle
+  o String jobDescription
+  o Double salary  // Annual salary in USD
+  o String paymentFrequency  // E.g., 'Monthly', 'Biweekly'
+  o String contractTerms  // Additional terms and conditions
+  o DateTime dateSigned optional
+  o Party[] signatories optional
+}
+
+
+transaction SignRequest extends Request {
+  o Party[] signatories
+}
+transaction SignRequestResponse extends Response {
+  o EmploymentContractModel contract 
+  o Party[] signatories 
+}
+
+transaction FailureResponse extends Response {
+  o String messaged
+}
+
+
+
+enum ContractRequestLifecycleState {
+  o SIGNED
+  o NOTSIGNED
+}
