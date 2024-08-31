@@ -42,7 +42,7 @@ const Register: React.FC = () => {
               </label>
               <input
                 type="email"
-                id="email"
+                name="email"
                 value={form.email}
                 onChange={setFormValue}
                 className="w-full px-3 py-2 border rounded-md"
@@ -55,7 +55,7 @@ const Register: React.FC = () => {
               </label>
               <input
                 type="password"
-                id="password"
+                name="password"
                 value={form.password}
                 onChange={setFormValue}
                 className="w-full px-3 py-2 border rounded-md"
