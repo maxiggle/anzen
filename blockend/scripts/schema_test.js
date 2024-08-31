@@ -1,9 +1,69 @@
-
-
 const { ethers } = require('ethers');
 require('dotenv').config();
 
-const employeeAbi = 
+const schemaAbi = [{
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "fieldType",
+            "type": "string"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ContractSchema.SchemaField[]",
+        "name": "fields",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "SchemaCreated",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "fieldType",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct ContractSchema.SchemaField[]",
+        "name": "data",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "createSchema",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }]
+
+  const employeeAbi = 
 [
   {
     "inputs": [
@@ -15,11 +75,6 @@ const employeeAbi =
       {
         "internalType": "address",
         "name": "_employerContractAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_textStorageAddress",
         "type": "address"
       }
     ],
@@ -55,25 +110,6 @@ const employeeAbi =
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "internalType": "string",
-        "name": "message",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "value",
-        "type": "uint256"
-      }
-    ],
-    "name": "Log",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": true,
         "internalType": "address",
         "name": "newOracleAddress",
@@ -94,25 +130,6 @@ const employeeAbi =
       }
     ],
     "name": "ReviewContractCalled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "reviewId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "extractedText",
-        "type": "string"
-      }
-    ],
-    "name": "TextExtracted",
     "type": "event"
   },
   {
@@ -167,11 +184,6 @@ const employeeAbi =
         "internalType": "uint256",
         "name": "messagesCount",
         "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "isTextExtraction",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -185,44 +197,6 @@ const employeeAbi =
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "contractid",
-        "type": "uint256"
-      }
-    ],
-    "name": "extractTextFromGeneratedContract",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "reviewId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getExtractedText",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -421,19 +395,6 @@ const employeeAbi =
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "textStorageAddress",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -455,72 +416,104 @@ const employeeAbi =
 ];
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY_GALADRIEL;
-const contractAddress = "0x1e2c9aA7154005c163C8CC52Fc3eA57E5F7b31f6";
+const schemaContractAddress = "0xe01e21c1201b5DB703a08eb494928baa92474a34";
+const employeeContractAddress = "0x5932977b82b4782940D5c60ff34321c26d575a8a"
 const RPC_URL = "https://devnet.galadriel.com/"
-const provider = new ethers.JsonRpcProvider(RPC_URL);
-const wallet = new ethers.Wallet(PRIVATE_KEY, provider); 
-const employeeAddress = "0xb8FCeb74C6c7e9DEaAcE41060747670d43475997";
+const providerForSchema = new ethers.JsonRpcProvider(RPC_URL);
+const providerForEmployee = new ethers.JsonRpcProvider(RPC_URL);
+const wallet1 = new ethers.Wallet(PRIVATE_KEY, providerForSchema);
+const wallet2 = new ethers.Wallet(PRIVATE_KEY, providerForEmployee);
 
-const employeeContract = new ethers.Contract(contractAddress, employeeAbi, wallet);
+const schema = new ethers.Contract(schemaContractAddress, schemaAbi, wallet1);
+const employee = new ethers.Contract(employeeContractAddress, employeeAbi, wallet2);
+ 
 
-async function reviewContract(employerContractId, query) {
-    // Call the contract function and wait for the transaction to be mined
-    const tx = await employeeContract.reviewContract(employerContractId, query);
+const prepareAndSendSchema = async (aiGeneratedText) => {
+    const schemaFields = generateSchemaFromText(aiGeneratedText);
+    console.log("Schema fields:", aiGeneratedText);
+    // Assume `client` is your blockchain client instance
+    try {
+        const tx = await schema.createSchema({
+            name: "Employment Contract",
+            data: schemaFields
+        });
 
-    // Wait for the transaction to be confirmed
-    const receipt = await tx.wait();
+        console.log("Transaction hash:", tx);
+        await tx.wait();
+        console.log("Schema created successfully.");
+    } catch (error) {
+        console.error("Error creating schema:", error);
+    }
+};
 
-    const events = receipt.logs.map((log) => {
-        try {
-            return employeeContract.interface.parseLog(log);
-        } catch (e) {
-            return null; 
+ async function getGeneratedContract(contractId) {
+    try {
+        const contract = await employee.viewGeneratedContract(contractId);
+        if (!contract) {
+            console.error("Generated contract not found.");
+            return null;
         }
-    }).filter(e => e !== null);
-    // Assuming the function returns a uint256 (reviewId), capture it directly
-    console.log(events);
-   const  reviewId = events[0].args[0];
-   console.log('contract reviewed', reviewId);
-    return reviewId;
-}
-async function getReviewContent(reviewId) {
-    const content = await employeeContract.getReviewContent(reviewId);
-    console.log(content);
-    return content;
+        return contract;
+    } catch (error) {
+        console.error("Error fetching generated contract:", error);
+        return null;
+    }
     
 }
 
-async function viewGeneratedContract(contractId) {
-    const content = await employeeContract.viewGeneratedContract(contractId);
-    console.log(content);
-    return content;
-}
+  async function main() {
+   const aiGeneratedText = await getGeneratedContract(1);
+   await prepareAndSendSchema(aiGeneratedText);
 
-async function extractTextFromGeneratedContract(contractId) {
-  const extractedText = await employeeContract.extractTextFromGeneratedContract(contractId);
-  console.log(extractedText);
-  return extractedText; 
-}
 
-async function getExtractedText(id) {
-  const extractedText = await employeeContract.getExtractedText(id);
-  console.log(extractedText);
-  return extractedText;
-}
-async function main() {
-//  const content = await viewGeneratedContract(1);
-//  console.log(content);
-  // const id =  await reviewContract(1, "review this contract and explain all the terms in details");
-  // console.log("reviewed content:", content)
- await extractTextFromGeneratedContract(1);
-//  console.log("extracted text:", text)
-//  console.log("extracted text:", content)
-//  const review = await getReviewContent(4);
-//  console.log("review content:", review)
-  const extractedText = await getExtractedText(2);
-  console.log("extracted text:", extractedText)
+  }
+  main().catch(console.error);
 
-}
+  const generateSchemaFromText = (text) => {
+    // Example extraction logic (adjust based on your text structure)
+    const extractedData = {
+        employeeLastName: extractLastName(text),
+        employeeFirstName: extractFirstName(text),
+        jobTitle: extractJobTitle(text),
+        startDate: extractStartDate(text),
+        salary: extractSalary(text),
+        weeklyHours: extractWeeklyHours(text),
+        employeeAddress: extractEmployeeAddress(text),
+        hrAddress: extractHrAddress(text),
+        contractDetails: extractContractDetails(text),
+        status: "Pending",
+        employeeSigned: false,
+        hrSigned: false,
+        employeeSignature: "0x",
+        hrSignature: "0x",
+        finalizedAt: 0
+    };
 
-main().catch(console.error);
+    return [
+        { name: "employeeLastName", type: "string" },
+        { name: "employeeFirstName", type: "string" },
+        { name: "jobTitle", type: "string" },
+        { name: "startDate", type: "uint256" },
+        { name: "salary", type: "uint256" },
+        { name: "weeklyHours", type: "uint256" },
+        { name: "employeeAddress", type: "address" },
+        { name: "hrAddress", type: "address" },
+        { name: "contractDetails", type: "string" },
+        { name: "status", type: "string" },
+        { name: "employeeSigned", type: "bool" },
+        { name: "hrSigned", type: "bool" },
+        { name: "employeeSignature", type: "bytes" },
+        { name: "hrSignature", type: "bytes" },
+        { name: "finalizedAt", type: "uint256" }
+    ];
+};
 
+// Function to convert extracted data into the format for `createSchema`
+const prepareSchemaData = (text) => {
+    const schemaFields = generateSchemaFromText(text);
+    // Assuming `client` is your blockchain client instance
+    client.createSchema({
+        name: "Employment Contract",
+        data: schemaFields
+    });
+};
