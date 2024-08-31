@@ -1,14 +1,25 @@
-require('dotenv').config();
+
 
 const { ethers } = require('ethers');
+require('dotenv').config();
 
-
-const contractABI = [
+const employeeAbi = 
+[
   {
     "inputs": [
       {
         "internalType": "address",
         "name": "initialOracleAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_employerContractAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_textStorageAddress",
         "type": "address"
       }
     ],
@@ -20,33 +31,14 @@ const contractABI = [
     "inputs": [
       {
         "indexed": true,
-        "internalType": "address",
-        "name": "hr",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "employee",
-        "type": "address"
-      },
-      {
-        "indexed": true,
         "internalType": "uint256",
-        "name": "contractId",
+        "name": "employerContractId",
         "type": "uint256"
-      }
-    ],
-    "name": "ContractGenerated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+      },
       {
         "indexed": true,
         "internalType": "uint256",
-        "name": "contractId",
+        "name": "reviewId",
         "type": "uint256"
       },
       {
@@ -63,6 +55,25 @@ const contractABI = [
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "string",
+        "name": "message",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "Log",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
         "name": "newOracleAddress",
@@ -73,10 +84,42 @@ const contractABI = [
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "reviewId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ReviewContractCalled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "reviewId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "extractedText",
+        "type": "string"
+      }
+    ],
+    "name": "TextExtracted",
+    "type": "event"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "contractId",
+        "name": "reviewId",
         "type": "uint256"
       },
       {
@@ -98,7 +141,7 @@ const contractABI = [
         "type": "uint256"
       }
     ],
-    "name": "contractRuns",
+    "name": "contractReviews",
     "outputs": [
       {
         "internalType": "address",
@@ -106,18 +149,13 @@ const contractABI = [
         "type": "address"
       },
       {
-        "internalType": "address",
-        "name": "hr",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "employerContractId",
+        "type": "uint256"
       },
       {
         "internalType": "string",
-        "name": "contractContent",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "employeeReview",
+        "name": "review",
         "type": "string"
       },
       {
@@ -129,6 +167,24 @@ const contractABI = [
         "internalType": "uint256",
         "name": "messagesCount",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isTextExtraction",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "employerContractAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -137,17 +193,12 @@ const contractABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "employee",
-        "type": "address"
-      },
-      {
-        "internalType": "string",
-        "name": "employeeTerms",
-        "type": "string"
+        "internalType": "uint256",
+        "name": "contractid",
+        "type": "uint256"
       }
     ],
-    "name": "generateContract",
+    "name": "extractTextFromGeneratedContract",
     "outputs": [
       {
         "internalType": "uint256",
@@ -162,11 +213,11 @@ const contractABI = [
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "contractId",
+        "name": "reviewId",
         "type": "uint256"
       }
     ],
-    "name": "getContractContent",
+    "name": "getExtractedText",
     "outputs": [
       {
         "internalType": "string",
@@ -181,26 +232,7 @@ const contractABI = [
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "contractId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getLatestReviewResponse",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "contractId",
+        "name": "reviewId",
         "type": "uint256"
       }
     ],
@@ -234,6 +266,25 @@ const contractABI = [
         "internalType": "struct IOracle.Message[]",
         "name": "",
         "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "reviewId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getReviewContent",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -336,7 +387,7 @@ const contractABI = [
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "contractId",
+        "name": "employerContractId",
         "type": "uint256"
       },
       {
@@ -346,7 +397,13 @@ const contractABI = [
       }
     ],
     "name": "reviewContract",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -362,70 +419,108 @@ const contractABI = [
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "textStorageAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "contractId",
+        "type": "uint256"
+      }
+    ],
+    "name": "viewGeneratedContract",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   }
-]
-// Load environment variables
+];
+
 const PRIVATE_KEY = process.env.PRIVATE_KEY_GALADRIEL;
+const contractAddress = "0x1e2c9aA7154005c163C8CC52Fc3eA57E5F7b31f6";
 const RPC_URL = "https://devnet.galadriel.com/"
-
-// Initialize provider and signer
 const provider = new ethers.JsonRpcProvider(RPC_URL);
-const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
+const wallet = new ethers.Wallet(PRIVATE_KEY, provider); 
+const employeeAddress = "0xb8FCeb74C6c7e9DEaAcE41060747670d43475997";
 
-// Contract ABI and address
+const employeeContract = new ethers.Contract(contractAddress, employeeAbi, wallet);
 
-const contractAddress = "0x14D14a3499099c73C67Be763F8C6aC6E9472E8eE"; 
+async function reviewContract(employerContractId, query) {
+    // Call the contract function and wait for the transaction to be mined
+    const tx = await employeeContract.reviewContract(employerContractId, query);
 
-// Initialize contract instance
-const contract = new ethers.Contract(contractAddress, contractABI, wallet);
+    // Wait for the transaction to be confirmed
+    const receipt = await tx.wait();
 
-async function generateContract(employeeAddress, employeeTerms) {
-    const tx = await contract.generateContract(employeeAddress, employeeTerms);
-    await tx.wait();
-    console.log(`Contract generated with ID: ${tx.value.toString()}`);
+    const events = receipt.logs.map((log) => {
+        try {
+            return employeeContract.interface.parseLog(log);
+        } catch (e) {
+            return null; 
+        }
+    }).filter(e => e !== null);
+    // Assuming the function returns a uint256 (reviewId), capture it directly
+    console.log(events);
+   const  reviewId = events[0].args[0];
+   console.log('contract reviewed', reviewId);
+    return reviewId;
+}
+async function getReviewContent(reviewId) {
+    const content = await employeeContract.getReviewContent(reviewId);
+    console.log(content);
+    return content;
+    
 }
 
-async function reviewContract(contractId, query) {
-    const tx = await contract.reviewContract(contractId, query);
-    await tx.wait();
-    console.log(`Contract with ID ${contractId} reviewed.`);
+async function viewGeneratedContract(contractId) {
+    const content = await employeeContract.viewGeneratedContract(contractId);
+    console.log(content);
+    return content;
 }
 
-async function approveContract(contractId, approval) {
-    const tx = await contract.approveContract(contractId, approval);
-    await tx.wait();
-    console.log(`Contract with ID ${contractId} approval status: ${approval}`);
+async function extractTextFromGeneratedContract(contractId) {
+  const extractedText = await employeeContract.extractTextFromGeneratedContract(contractId);
+  console.log(extractedText);
+  return extractedText; 
 }
 
-async function getContractContent(contractId) {
-    const content = await contract.getContractContent(contractId);
-    console.log(`Contract Content for ID ${contractId}: ${content}`);
+async function getExtractedText(id) {
+  const extractedText = await employeeContract.getExtractedText(id);
+  console.log(extractedText);
+  return extractedText;
 }
-
-async function getMessageHistory(contractId) {
-    const messages = await contract.getMessageHistory(contractId);
-    console.log(`Message History for Contract ID ${contractId}:`);
-    messages.forEach((message, index) => {
-        console.log(`Message ${index + 1}: Role - ${message.role}, Content - ${message.content[0].value}`);
-    });
-}
-
-async function getReviewResponse(contractId){
-  const messages = await contract.getLatestReviewResponse(contractId);
- console.log(`Review Response ${messages}:`);
-}
-
 async function main() {
-    // Example interaction
-    const employeeAddress = "0xb8FCeb74C6c7e9DEaAcE41060747670d43475997";
-    const employeeTerms = "Standard employment including health insurance, 401k, and more and employer name should be Gef and name of company should be Variance";
-    // await generateContract(employeeAddress, employeeTerms);
-   await getContractContent(1);
-  //  await reviewContract(1, "Explain every clause in the contract");
-  //  await getReviewResponse(1);
-    // await approveContract(1, false);
-    
-    
+//  const content = await viewGeneratedContract(1);
+//  console.log(content);
+  // const id =  await reviewContract(1, "review this contract and explain all the terms in details");
+  // console.log("reviewed content:", content)
+ await extractTextFromGeneratedContract(1);
+//  console.log("extracted text:", text)
+//  console.log("extracted text:", content)
+//  const review = await getReviewContent(4);
+//  console.log("review content:", review)
+  const extractedText = await getExtractedText(2);
+  console.log("extracted text:", extractedText)
+
 }
 
 main().catch(console.error);
+
