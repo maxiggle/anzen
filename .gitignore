@@ -1,3 +1,4 @@
 api/node_modules
 api/yarn.lock
 blockend/scripts/ctest.js
+client/.env

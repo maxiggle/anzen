@@ -20,8 +20,6 @@ export default function useContract() {
       employeeAddress,
       employeeTerms
     );
-
-    console.log("transaction", transaction);
     const transactionResponse = await transaction.wait();
     const events = transactionResponse.logs
       .map((log: ethers.Log) => {
@@ -38,9 +36,7 @@ export default function useContract() {
   }
 
   async function getContractContent(contractId: number): Promise<string> {
-    const content = await employerContract.getContractContent(contractId);
-    console.log(`Contract Content for ID ${contractId}: ${content}`);
-    return content;
+    return employerContract.getContractContent(contractId);
   }
   return {
     create,

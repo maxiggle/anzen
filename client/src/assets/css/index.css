@@ -128,6 +128,11 @@
   background-blend-mode: overlay;
 }
 
+.bg-ai {
+  background-image: url("../imgs/ai.png");
+  background-position: center;
+}
+
 .dev,
 .dev * {
   outline: 1px solid rgba(255, 0, 0, 0.384) !important;

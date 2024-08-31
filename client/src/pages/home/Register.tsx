@@ -20,17 +20,16 @@ const Register: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      <div className="w-1/2 bg-blue-600">
-        {/* Add your image here */}
-        <div className="h-full flex items-center justify-center">
-          <h2 className="text-4xl font-bold text-white">
-            Welcome to HR Portal
-          </h2>
-        </div>
-      </div>
-      <div className="w-1/2 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+    <div className="min-h-screen bg-koi flex">
+      <div className="w-full flex items-center flex-col justify-center">
+        <a className="inline-flex w-[220px] mb-8 rounded-[30px] px-6 overflow-hidden">
+          <img
+            src="/icons/hlogo.png"
+            alt="logo"
+            className="w-full h-full object-cover"
+          />
+        </a>
+        <div className="bg-white p-8 rounded-lg border-2 w-full max-w-md">
           <h2 className="text-2xl font-bold mb-6 text-center">
             Register as{" "}
             {accountType === "company" ? "a Company" : "a Contractor"}
