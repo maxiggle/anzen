@@ -8,7 +8,7 @@ export default function Index() {
           <div className="relative p-3 z-10 mx-auto md:gap-[4.375rem] flex flex-col md:flex-row items-center">
             <div className="bg-blocks relative w-full rounded-md">
               <div className="absolute inset-0 bg-gradient-to-r pt-8 rounded-md from-purple-600/10 to-indigo-600/50 backdrop-blur-md"></div>
-              <div className="relative flex md:flex-row flex-col items-center gap-8 container px-8 mx-auto z-10">
+              <div className="relative flex md:flex-row flex-col items-center gap-8 container px-8 mx-auto z-10 lg:py-20">
                 <div className="md:w-1/3 hidden md:flex items-center md:py-16 md:pt-24">
                   <div className="rounded-xl md:h-[35rem] border-8 border-white">
                     <img
@@ -19,7 +19,7 @@ export default function Index() {
                   </div>
                 </div>
                 <div className="pr-8 md:w-2/3 px-6 md:px-auto py-32 md:py-40">
-                  <h1 className="text-4xl md:text-9xl leading-tight mb-4">
+                  <h1 className="text-4xl lg:text-[6em] leading-tight mb-4">
                     <span className="font-bold">AI-Powered</span> HR &{" "}
                     <span className="font-bold">Payroll</span> Solutions
                   </h1>
