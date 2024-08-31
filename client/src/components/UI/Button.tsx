@@ -49,7 +49,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       default:
         "bg-purple-500 active:ring-4 text-white transition-all active:ring-pink-200 hover:bg-purple-400",
       plain: "hover:bg-gray-100 active:bg-gray-200",
-      secondary: "bg-niche-purple-300",
+      secondary: "bg-purple-300",
       outline: "border border-purple-500 text-purple-500 hover:bg-purple-100",
     };
 

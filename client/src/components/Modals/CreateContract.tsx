@@ -1,20 +1,25 @@
 import useContract from "../../hooks/useContract";
 import Button from "../UI/Button";
 import config from "../../utils/config";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import ReactMarkdown from "react-markdown";
 
 export default function CreateContract() {
   const { create, getContractContent } = useContract();
   const [contractContent, setContractContent] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const printTarget = useRef<HTMLDivElement>(null);
 
   async function handleCreateContractAndReturnContent(): Promise<void> {
+    setIsGenerating(true);
     const contractId = await create(
       config.employeeAddress,
       "Position: Software Engineer; Salary: $100,000; Start Date: 2024-09-01"
     );
     const content = await getContractContent(+contractId.toString() - 1);
     setContractContent(content);
+    setIsGenerating(false);
   }
 
   useEffect(() => {
@@ -30,8 +35,17 @@ export default function CreateContract() {
             </style>
           </head>
           <body>
-            <h1>Employment Contract</h1>
-            <pre>${contractContent}</pre>
+          <div style="text-align: center;">
+              <a style="width: 220px; display: inline-flex; mergin-bottom: 8px">
+                <img
+                  src="/icons/hlogo.png"
+                  alt="logo"
+                  style="width:100%; height: auto; object-fit:cover"
+                />
+              </a>
+            </div>
+            <h1>Employment Offer</h1>
+            <div>${printTarget.current?.innerHTML}</div>
           </body>
         </html>
       `);
@@ -39,25 +53,56 @@ export default function CreateContract() {
       printWindow?.print();
       setIsPrinting(false);
     }
-  }, [isPrinting, contractContent]);
+  }, [isPrinting, contractContent, printTarget]);
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <Button
-        variant="plain"
-        onClick={() => handleCreateContractAndReturnContent()}
-      >
-        Generate Contract
-      </Button>
+      {contractContent === "" ? (
+        <>
+          <div>
+            <h3 className="font-semibold mb-4 text-lg">Create Your Contract</h3>
 
-      {contractContent && (
-        <div className="mt-4">
-          <h2 className="text-2xl font-bold mb-4">Employment Contract</h2>
-          <div className="border-2 border-gray-300 rounded-md p-4 mb-4 whitespace-pre-wrap">
-            {contractContent}
+            <div className="">
+              <label className="block mb-2">Enter Your Terms:</label>
+              <textarea
+                className="w-full mb-3 p-3 border-2 rounded-lg"
+                cols={4}
+                rows={4}
+              ></textarea>
+            </div>
+            <Button
+              variant="primary"
+              loading={isGenerating}
+              onClick={() => handleCreateContractAndReturnContent()}
+            >
+              Generate
+            </Button>
           </div>
-          <div className="flex justify-end">
-            <Button variant="plain" onClick={() => setIsPrinting(true)}>
+        </>
+      ) : (
+        <div className="">
+          <h2 className="text-xl font-semibold mb-4">Employment Contract</h2>
+          <div
+            ref={printTarget}
+            className="border-2 contract border-gray-300 rounded-md p-4 mb-4"
+          >
+            <ReactMarkdown>{contractContent}</ReactMarkdown>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="outline"
+              loading={isGenerating}
+              onClick={() => {
+                handleCreateContractAndReturnContent();
+              }}
+            >
+              Regenerate
+            </Button>
+            <Button
+              loading={isPrinting}
+              variant="primary"
+              onClick={() => setIsPrinting(true)}
+            >
               Print Contract
             </Button>
           </div>

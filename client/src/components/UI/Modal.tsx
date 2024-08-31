@@ -45,7 +45,10 @@ export default function Model({ state, setState, children, size }: IProps) {
       )}
       {backdrop && (
         <div
-          className={clsx(["relative z-10 w-full p-3", sizes[size || "md"]])}
+          className={clsx([
+            "relative z-10 w-full max-h-screen overflow-y-auto p-3",
+            sizes[size || "md"],
+          ])}
         >
           {children}
         </div>

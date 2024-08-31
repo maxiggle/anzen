@@ -1,7 +1,45 @@
+import Bubble from "../../components/Chat/Bubble";
+import ClientList from "../../components/Chat/ClientList";
 import Button from "../../components/UI/Button";
 import EmojiSelect from "../../components/UI/EmojiSelect";
 
 export default function Chat() {
+  const messages = [
+    {
+      isUser: true,
+      message: "Hello! How can I help you today?",
+      time: "10:00 AM",
+      status: "Sent",
+    },
+    {
+      isUser: false,
+      message: "Hi there! I have a question about my account.",
+      time: "10:02 AM",
+      status: "Received",
+    },
+    {
+      isUser: true,
+      message:
+        "Of course! I'd be happy to assist you with your account. What specific question do you have?",
+      time: "10:05 AM",
+      status: "Sent",
+    },
+    {
+      isUser: false,
+      message:
+        "I'm trying to update my billing information, but I'm having trouble finding where to do that.",
+      time: "10:08 AM",
+      status: "Received",
+    },
+    {
+      isUser: true,
+      message:
+        "No problem! I can guide you through that process. First, go to your account settings by clicking on your profile picture in the top right corner.",
+      time: "10:10 AM",
+      status: "Sent",
+    },
+  ];
+
   return (
     <div>
       <div className="flex flex-row mb-6 justify-between items-center">
@@ -15,51 +53,23 @@ export default function Chat() {
 
       <div className="flex h-[calc(100vh-200px)]">
         {/* Client list */}
-        <div className="w-1/4  border rounded-lg bg-white border-gray-200 mr-4 overflow-y-auto">
-          <h3 className="text-lg font-semibold p-4 border-b border-gray-200">
-            Clients
-          </h3>
-          <ul className="divide-y divide-gray-200">
-            {["Client 1", "Client 2", "Client 3"].map((client, index) => (
-              <li
-                key={index}
-                className="p-4 hover:bg-gray-200 cursor-pointer transition duration-150 ease-in-out flex items-center"
-              >
-                <div className="w-8 h-8 bg-blue-500 rounded-full mr-3 flex items-center justify-center text-white font-semibold border border-blue-600">
-                  {client.charAt(0)}
-                </div>
-                <span>{client}</span>
-              </li>
-            ))}
-          </ul>
+        <div className="w-1/4 ">
+          <ClientList />
         </div>
 
-        {/* Chat area */}
         <div className="w-3/4 flex bg-white border rounded-lg flex-col">
-          {/* Messages */}
-          <div className="flex-grow p-4  overflow-y-auto">
-            {/* Sample messages */}
-            <div className="mb-4">
-              <div className="bg-blue-100 p-3 rounded-lg inline-block max-w-3/4 border border-blue-200 relative">
-                <p>Hello! How can I help you today?</p>
-                <div className="absolute left-0 top-1/2 transform -translate-x-2 -translate-y-1/2 w-0 h-0 border-t-8 border-r-8 border-b-8 border-blue-100 border-r-transparent border-b-transparent"></div>
-                <div className="text-xs text-gray-500 mt-1">
-                  10:30 AM | <span className="text-blue-500">●</span>
-                </div>
-              </div>
-            </div>
-            <div className="mb-4 text-right">
-              <div className="bg-green-100 p-3 rounded-lg inline-block max-w-3/4 border border-green-200 relative">
-                <p>I have a question about my contract.</p>
-                <div className="absolute right-0 top-1/2 transform translate-x-2 -translate-y-1/2 w-0 h-0 border-t-8 border-l-8 border-b-8 border-green-100 border-l-transparent border-b-transparent"></div>
-                <div className="text-xs text-gray-500 mt-1">
-                  10:32 AM | <span className="text-green-500">●●</span>
-                </div>
-              </div>
-            </div>
+          <div className="flex-grow p-8  overflow-y-auto">
+            {messages.map((e, i) => (
+              <Bubble
+                key={i}
+                isUser={e.isUser}
+                message={e.message}
+                time={e.time}
+                status={e.status}
+              />
+            ))}
           </div>
 
-          {/* Input area */}
           <div className="p-4 border-t">
             <div className="flex items-center">
               <button className="mr-2 text-gray-500 hover:text-gray-700">
