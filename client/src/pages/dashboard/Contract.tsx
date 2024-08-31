@@ -3,6 +3,7 @@ import DataTable from "../../components/UI/DataTable";
 import { FaPlus } from "react-icons/fa";
 import Model from "../../components/UI/Model";
 import { useState } from "react";
+import CreateContract from "../../components/Modals/CreateContract";
 
 export default function Contract() {
   const [show, setShow] = useState(false);
@@ -48,7 +49,7 @@ export default function Contract() {
       </div>
 
       <Model state={show} setState={setShow}>
-        <div className="bg-white p-8">wfqgr</div>
+        <CreateContract />
       </Model>
     </div>
   );
