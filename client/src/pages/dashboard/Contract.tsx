@@ -12,11 +12,7 @@ export default function Contract() {
       <div className="flex flex-row justify-between items-center">
         <h2 className="text-lg font-semibold">Contract</h2>
         <div>
-          <Button
-            loading={true}
-            onClick={() => setShow(true)}
-            variant="primary"
-          >
+          <Button onClick={() => setShow(true)} variant="primary">
             Generate Contract
           </Button>
         </div>
