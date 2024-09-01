@@ -17,6 +17,9 @@ import numeral from 'numeral';
 import contractsJSON from '../public/abis/7887.json';
 import './App.css';
 
+import AttestationApp from './SignProtocol';
+
+
 interface KYCViewerInfo {
   isIndividual: boolean;
   isCorporate: boolean;
@@ -338,6 +341,7 @@ const KintoConnect = () => {
             {!accountInfo && (
               <GlobalLoader />
             )}
+            <AttestationApp></AttestationApp>
           </BaseScreen>
           <AppFooter />
         </ContentWrapper>
