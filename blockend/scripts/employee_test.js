@@ -497,30 +497,50 @@ async function viewGeneratedContract(contractId) {
 }
 
 async function extractTextFromGeneratedContract(contractId) {
-  const extractedText = await employeeContract.extractTextFromGeneratedContract(contractId);
-  console.log(extractedText);
-  return extractedText; 
+  const tx = await employeeContract.extractTextFromGeneratedContract(contractId);
+  const receipt = await tx.wait();
+  console.log("Transaction mined:", receipt.transactionHash);
+  return receipt;
 }
 
-async function getExtractedText(id) {
-  const extractedText = await employeeContract.getExtractedText(id);
-  console.log(extractedText);
-  return extractedText;
+async function getExtractedText(contractId) {
+  const content = await employeeContract.getExtractedText(contractId);
+  // const receipt = await content.wait();
+  console.log(content);
+  return content;
+  
 }
+
 async function main() {
-//  const content = await viewGeneratedContract(1);
-//  console.log(content);
-  // const id =  await reviewContract(1, "review this contract and explain all the terms in details");
-  // console.log("reviewed content:", content)
- await extractTextFromGeneratedContract(1);
-//  console.log("extracted text:", text)
-//  console.log("extracted text:", content)
-//  const review = await getReviewContent(4);
-//  console.log("review content:", review)
-  const extractedText = await getExtractedText(2);
-  console.log("extracted text:", extractedText)
+  // await extractTextFromGeneratedContract(1);
 
+  // Add a delay to allow time for the extraction process
+  // console.log("Waiting for extraction to complete...");
+  // await new Promise(resolve => setTimeout(resolve, 30000)); // 30 seconds delay
+
+  const extractedText = await getExtractedText(6);
+  console.log("Extracted text:", extractedText);
 }
+
+// employeeContract.on("TextExtracted", (reviewId, extractedText) => {
+//   console.log(`Text extracted for review ${reviewId}:`, extractedText);
+// });
+
+// async function main() {
+// //  const content = await viewGeneratedContract(1);
+// //  console.log(content);
+//   // const id =  await reviewContract(1, "review this contract and explain all the terms in details");
+//   // console.log("reviewed content:", content)
+// const tx = await extractTextFromGeneratedContract(1);
+// console.log("extracted text:", tx)
+// //  console.log("extracted text:", text)
+// //  console.log("extracted text:", content)
+// //  const review = await getReviewContent(4);
+// //  console.log("review content:", review)
+//   const extractedText = await getExtractedText(2);
+//   console.log("extracted text:", extractedText)
+
+// }
 
 main().catch(console.error);
 
