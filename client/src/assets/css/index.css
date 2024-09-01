@@ -163,3 +163,18 @@
     opacity: 1;
   }
 }
+
+.contract p {
+  @apply mb-3;
+}
+
+.contract hr {
+  @apply my-4;
+}
+
+.contract ul {
+  @apply ml-4 mb-3;
+}
+.contract ul li {
+  list-style: square;
+}

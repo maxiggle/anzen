@@ -44,7 +44,7 @@ export default function Contract() {
         />
       </div>
 
-      <Model state={show} setState={setShow}>
+      <Model state={show} size="3xl" setState={setShow}>
         <CreateContract />
       </Model>
     </div>

@@ -10,6 +10,7 @@ export default {
   employerAbi: galadrielABI,
   xmtp: {
     kintoPrivateKey: import.meta.env.VITE_APP_KINTO_PRIVATE_KEY,
-    kintoRPCURL: import.meta.env.VITE_APP_KINTO_RPC_URL
+    kintoRPCURL: import.meta.env.VITE_APP_KINTO_RPC_URL,
+    environment: import.meta.env.VITE_APP_XMTP_ENV
   },
 }
