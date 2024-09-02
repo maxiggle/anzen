@@ -12,7 +12,7 @@ async function main() {
    );
 
   const employerTarget = "0xa676B5B3afB00C838B42e0aaBa56753a923aB9EF";
-  const employee = await  ethers.deployContract("EmployeeContract", [oracleAddress, employerTarget, textStorage], {});
+  const employee = await  ethers.deployContract("EmployeeContract", [oracleAddress, employerTarget, textStorage.target], {});
   await employee.waitForDeployment();
   console.log(
     `deployed to ${employee.target}`

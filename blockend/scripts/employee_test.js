@@ -455,7 +455,7 @@ const employeeAbi =
 ];
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY_GALADRIEL;
-const contractAddress = "0x1e2c9aA7154005c163C8CC52Fc3eA57E5F7b31f6";
+const contractAddress = "0x09a5733DF8951C9f78f91ce9a38E9Fe0e36b8b1c";
 const RPC_URL = "https://devnet.galadriel.com/"
 const provider = new ethers.JsonRpcProvider(RPC_URL);
 const wallet = new ethers.Wallet(PRIVATE_KEY, provider); 
@@ -499,7 +499,7 @@ async function viewGeneratedContract(contractId) {
 async function extractTextFromGeneratedContract(contractId) {
   const tx = await employeeContract.extractTextFromGeneratedContract(contractId);
   const receipt = await tx.wait();
-  console.log("Transaction mined:", receipt.transactionHash);
+  console.log("Transaction mined:", receipt);
   return receipt;
 }
 
@@ -518,8 +518,8 @@ async function main() {
   // console.log("Waiting for extraction to complete...");
   // await new Promise(resolve => setTimeout(resolve, 30000)); // 30 seconds delay
 
-  const extractedText = await getExtractedText(6);
-  console.log("Extracted text:", extractedText);
+  const extractedText = await getExtractedText(2);
+  // console.log("Extracted text:", extractedText);
 }
 
 // employeeContract.on("TextExtracted", (reviewId, extractedText) => {
