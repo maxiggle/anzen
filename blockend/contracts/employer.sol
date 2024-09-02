@@ -4,7 +4,7 @@ pragma solidity 0.8.26;
 import "./interfaces/IOracle.sol";
 
 contract EmployerContract {
-    struct ContractRun {
+    struct EmployerContractStruct {
         address employee;
         address hr;
         string contractContent;
@@ -13,8 +13,8 @@ contract EmployerContract {
         uint256 messagesCount;
     }
 
-    mapping(uint256 => ContractRun) public contractRuns;
-    uint256 private contractRunsCount;
+    mapping(uint256 => EmployerContractStruct) public employerContractStructs;
+    uint256 private employerContractStructsCount;
 
     address private owner;
     address public oracleAddress;
@@ -31,7 +31,7 @@ contract EmployerContract {
     constructor(address initialOracleAddress) {
         owner = msg.sender;
         oracleAddress = initialOracleAddress;
-        contractRunsCount = 0;
+        employerContractStructsCount = 0;
 
         config = IOracle.OpenAiRequest({
             model: "gpt-4-turbo", // gpt-4-turbo gpt-4o
@@ -61,7 +61,10 @@ contract EmployerContract {
     }
 
     modifier onlyHR(uint256 contractId) {
-        require(msg.sender == contractRuns[contractId].hr, "Caller is not HR");
+        require(
+            msg.sender == employerContractStructs[contractId].hr,
+            "Caller is not HR"
+        );
         _;
     }
 
@@ -74,9 +77,11 @@ contract EmployerContract {
         address employee,
         string memory employeeTerms
     ) public returns (uint256) {
-        contractRunsCount++;
-        uint256 newContractId = contractRunsCount;
-        ContractRun storage run = contractRuns[newContractId];
+        employerContractStructsCount++;
+        uint256 newContractId = employerContractStructsCount;
+        EmployerContractStruct storage run = employerContractStructs[
+            newContractId
+        ];
 
         run.employee = employee;
         run.hr = msg.sender;
@@ -108,7 +113,7 @@ contract EmployerContract {
         IOracle.OpenAiResponse memory response,
         string memory errorMessage
     ) public onlyOracle {
-        ContractRun storage run = contractRuns[runId];
+        EmployerContractStruct storage run = employerContractStructs[runId];
 
         if (compareStrings(errorMessage, "")) {
             run.contractContent = response.content;
@@ -122,17 +127,17 @@ contract EmployerContract {
     function getContractContent(
         uint256 contractId
     ) public view returns (string memory) {
-        return contractRuns[contractId].contractContent;
+        return employerContractStructs[contractId].contractContent;
     }
 
     function getMessageHistory(
         uint256 contractId
     ) public view returns (IOracle.Message[] memory) {
-        return contractRuns[contractId].messages;
+        return employerContractStructs[contractId].messages;
     }
 
     function createNewMessage(
-        ContractRun storage run,
+        EmployerContractStruct storage run,
         string memory role,
         string memory content
     ) private {
@@ -154,5 +159,26 @@ contract EmployerContract {
     ) private pure returns (bool) {
         return (keccak256(abi.encodePacked((a))) ==
             keccak256(abi.encodePacked((b))));
+    }
+
+    function getAllContracts()
+        public
+        view
+        returns (uint256[] memory, EmployerContractStruct[] memory)
+    {
+        uint256[] memory contractIds = new uint256[](
+            employerContractStructsCount
+        );
+        EmployerContractStruct[]
+            memory contracts = new EmployerContractStruct[](
+                employerContractStructsCount
+            );
+
+        for (uint256 i = 1; i <= employerContractStructsCount; i++) {
+            contractIds[i - 1] = i;
+            contracts[i - 1] = employerContractStructs[i];
+        }
+
+        return (contractIds, contracts);
     }
 }
