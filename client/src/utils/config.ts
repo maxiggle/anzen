@@ -1,4 +1,5 @@
 import galadrielABI from "../abis/galadriel.json"
+import employeeABI from "../abis/employee.json"
 
 export default {
   web3AuthClientId: import.meta.env.VITE_APP_WEB3_AUTH_CLIENT_ID,
@@ -8,6 +9,7 @@ export default {
   galadrielRpcUrl: import.meta.env.VITE_APP_GALADRIEL_RPC_URL,
   employeeAddress: import.meta.env.VITE_APP_EMPLOYEE_ADDRESS,
   employerAbi: galadrielABI,
+  employeeAbi: employeeABI,
   xmtp: {
     kintoPrivateKey: import.meta.env.VITE_APP_KINTO_PRIVATE_KEY,
     kintoRPCURL: import.meta.env.VITE_APP_KINTO_RPC_URL,

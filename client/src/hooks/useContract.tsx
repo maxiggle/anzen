@@ -14,8 +14,6 @@ export default function useContract() {
     employeeAddress: string,
     employeeTerms: string
   ): Promise<bigint> {
-    console.log("eneter");
-
     const transaction = await employerContract.generateContract(
       employeeAddress,
       employeeTerms
