@@ -16,7 +16,7 @@ import DashboardSettings from "./pages/dashboard/Settings";
 import DashboardChat from "./pages/dashboard/Chat";
 import EmployeeDashBoard from "./pages/dashboard/Employeedashboard";
 import KintoConnect from "./pages/kinto/KintoConnect";
-import SignProtocol from "./pages/dashboard/SignProtocol"
+// import SignProtocol from "./pages/dashboard/SignProtocol"
 
 const App: React.FC = () => {
   return (
@@ -38,7 +38,7 @@ const App: React.FC = () => {
           <Route path="/dashboard/settings" element={<DashboardSettings />} />
           <Route path="/dashboard/employee" element={<EmployeeDashBoard />} />
           <Route path="/kinto/KintoConnect" element={<KintoConnect/>} />
-          <Route path="/kinto/SignProtocol" element={<SignProtocol/>} />
+          {/* <Route path="/kinto/SignProtocol" element={<SignProtocol/>} /> */}
         </Route>
       </Routes>
     </Router>
