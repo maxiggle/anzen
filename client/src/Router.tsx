@@ -15,6 +15,7 @@ import DashboardSupport from "./pages/dashboard/Support";
 import DashboardSettings from "./pages/dashboard/Settings";
 import DashboardChat from "./pages/dashboard/Chat";
 import EmployeeDashBoard from "./pages/dashboard/Employeedashboard";
+import KintoConnect from "./pages/kinto/KintoConnect";
 
 const App: React.FC = () => {
   return (
@@ -35,6 +36,7 @@ const App: React.FC = () => {
           <Route path="/dashboard/support" element={<DashboardSupport />} />
           <Route path="/dashboard/settings" element={<DashboardSettings />} />
           <Route path="/dashboard/employee" element={<EmployeeDashBoard />} />
+          <Route path="/kinto/KintoConnect" element={<KintoConnect/>} />
         </Route>
       </Routes>
     </Router>

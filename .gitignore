@@ -2,3 +2,7 @@ api/node_modules
 api/yarn.lock
 blockend/scripts/ctest.js
 client/.env
+client/certs/dev.kinto.xyz+3-key.pem
+client/certs/dev.kinto.xyz+3.pem
+client/src/pages/kinto/start-react-https.bat
+client/vite.config.js
