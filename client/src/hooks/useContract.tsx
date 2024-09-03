@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import config from "../utils/config";
+import { ContractResult } from "../utils/types";
 
 export default function useContract() {
   const provider = new ethers.JsonRpcProvider(config.galadrielRpcUrl);
@@ -36,8 +37,15 @@ export default function useContract() {
   async function getContractContent(contractId: number): Promise<string> {
     return employerContract.getContractContent(contractId);
   }
+
+  async function getAllContracts(): Promise<ContractResult> {
+    const result = await employerContract.getAllContracts();
+    return result;
+  }
+
   return {
     create,
     getContractContent,
+    getAllContracts,
   };
 }
