@@ -11,6 +11,7 @@ contract EmployerContract {
         bool isApproved;
         IOracle.Message[] messages;
         uint256 messagesCount;
+        uint256 createdAt;
     }
 
     mapping(uint256 => EmployerContractStruct) public employerContractStructs;
@@ -87,6 +88,7 @@ contract EmployerContract {
         run.hr = msg.sender;
         run.isApproved = false;
         run.contractContent = "";
+        run.createdAt = block.timestamp;
 
         delete run.messages;
         run.messagesCount = 0;
@@ -164,7 +166,12 @@ contract EmployerContract {
     function getAllContracts()
         public
         view
-        returns (uint256[] memory, EmployerContractStruct[] memory)
+        returns (
+            uint256[] memory,
+            EmployerContractStruct[] memory,
+            bool[] memory,
+            uint256[] memory
+        )
     {
         uint256[] memory contractIds = new uint256[](
             employerContractStructsCount
@@ -173,12 +180,18 @@ contract EmployerContract {
             memory contracts = new EmployerContractStruct[](
                 employerContractStructsCount
             );
+        bool[] memory statuses = new bool[](employerContractStructsCount);
+        uint256[] memory createdTimes = new uint256[](
+            employerContractStructsCount
+        );
 
         for (uint256 i = 1; i <= employerContractStructsCount; i++) {
             contractIds[i - 1] = i;
             contracts[i - 1] = employerContractStructs[i];
+            statuses[i - 1] = employerContractStructs[i].isApproved;
+            createdTimes[i - 1] = employerContractStructs[i].createdAt;
         }
 
-        return (contractIds, contracts);
+        return (contractIds, contracts, statuses, createdTimes);
     }
 }

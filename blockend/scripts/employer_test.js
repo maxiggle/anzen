@@ -3,7 +3,7 @@ require('dotenv').config();
 
 
 
-const employerAbi = [ 
+const employerAbi = [
   {
     "inputs": [
       {
@@ -61,7 +61,7 @@ const employerAbi = [
         "type": "uint256"
       }
     ],
-    "name": "contractRuns",
+    "name": "employerContractStructs",
     "outputs": [
       {
         "internalType": "address",
@@ -86,6 +86,11 @@ const employerAbi = [
       {
         "internalType": "uint256",
         "name": "messagesCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "createdAt",
         "type": "uint256"
       }
     ],
@@ -114,6 +119,95 @@ const employerAbi = [
       }
     ],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllContracts",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "employee",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "hr",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "contractContent",
+            "type": "string"
+          },
+          {
+            "internalType": "bool",
+            "name": "isApproved",
+            "type": "bool"
+          },
+          {
+            "components": [
+              {
+                "internalType": "string",
+                "name": "role",
+                "type": "string"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "string",
+                    "name": "contentType",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "value",
+                    "type": "string"
+                  }
+                ],
+                "internalType": "struct IOracle.Content[]",
+                "name": "content",
+                "type": "tuple[]"
+              }
+            ],
+            "internalType": "struct IOracle.Message[]",
+            "name": "messages",
+            "type": "tuple[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "messagesCount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct EmployerContract.EmployerContractStruct[]",
+        "name": "",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -284,12 +378,10 @@ const employerAbi = [
     "stateMutability": "nonpayable",
     "type": "function"
   }
-];
-
-
+]
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY_GALADRIEL;
-const contractAddress = "0xa676B5B3afB00C838B42e0aaBa56753a923aB9EF";
+const contractAddress = "0x5bD15a0E8d5B224C9c08f5b732cD77705235bB9e";
 const RPC_URL = "https://devnet.galadriel.com/"
 const provider = new ethers.JsonRpcProvider(RPC_URL);
 const wallet = new ethers.Wallet(PRIVATE_KEY, provider); 
@@ -331,8 +423,14 @@ async function getMessageHistory(contractId) {
     });
 }
 
+async function getAllContracts() {
+  const contracts = await employerContract.getAllContracts();
+  console.log("All Contracts: ", contracts);
+}
+
 async function main() {
-    await generateContract(employeeAddress, "Position: Software Engineer; Salary: $100,000; Start Date: 2024-09-01")
+  // await getAllContracts();
+    await generateContract(employeeAddress, "Position: Software Engineer; Salary: $100,000; Start Date: 2024-09-01") 
     // console.log("Generated ID: ", generatedId);
     // await getContractContent(2);
     // await getMessageHistory(1);
