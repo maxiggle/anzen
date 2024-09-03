@@ -15,6 +15,7 @@
     "@emoji-mart/react": "^1.1.1",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@ethsign/sp-sdk": "^0.7.2",
     "@mui/material": "^6.0.1",
     "@web3auth/base": "^8.12.4",
     "@web3auth/ethereum-provider": "^8.12.4",
