@@ -1,15 +1,5 @@
-import { useEffect, useState } from 'react';
-import { createKintoSDK, KintoAccountInfo } from 'kinto-web-sdk';
-import {
-  encodeFunctionData, Address, getContract,
-  defineChain, createPublicClient, http
-} from 'viem';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { getERC20Balances, formatTokenBalance, TokenBalance } from './BlockscoutUtils';
-import numeral from 'numeral';
-import contractsJSON from './abis/7887.json';
-import { KYCViewerService } from './KYCViewerService';
-import './App.css';
 import {
   FormControl,
   InputLabel,
@@ -19,6 +9,19 @@ import {
   Button,
   CircularProgress
 } from '@mui/material';
+import { Address } from 'viem';
+import { KintoAccountInfo } from 'kinto-web-sdk';
+import { TokenBalance, formatTokenBalance } from './BlockscoutUtils';
+import {
+  kintoLogin,
+  fetchCounter,
+  increaseCounter,
+  fetchKYCViewerInfo,
+  fetchAccountInfo,
+  fetchTokenBalances,
+  transferToken,
+  fetchDestinationKYC
+} from './KintoFunctions';
 
 interface KYCViewerInfo {
   isIndividual: boolean;
@@ -29,29 +32,7 @@ interface KYCViewerInfo {
   getWalletOwners: Address[];
 }
 
-export const counterAbi = [{ "type": "constructor", "inputs": [], "stateMutability": "nonpayable" }, { "type": "function", "name": "count", "inputs": [], "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }], "stateMutability": "view" }, { "type": "function", "name": "increment", "inputs": [], "outputs": [], "stateMutability": "nonpayable" }];
-
-const kinto = defineChain({
-  id: 7887,
-  name: 'Kinto',
-  network: 'kinto',
-  nativeCurrency: {
-    decimals: 18,
-    name: 'ETH',
-    symbol: 'ETH',
-  },
-  rpcUrls: {
-    default: {
-      http: ['https://rpc.kinto-rpc.com/'],
-      webSocket: ['wss://rpc.kinto.xyz/ws'],
-    },
-  },
-  blockExplorers: {
-    default: { name: 'Explorer', url: 'https://kintoscan.io' },
-  },
-});
-
-const KintoConnect = () => {
+const KintoConnect: React.FC = () => {
   const [accountInfo, setAccountInfo] = useState<KintoAccountInfo | undefined>(undefined);
   const [kycViewerInfo, setKYCViewerInfo] = useState<KYCViewerInfo | undefined>(undefined);
   const [counter, setCounter] = useState<number>(0);
@@ -61,18 +42,72 @@ const KintoConnect = () => {
   const [recipientAddress, setRecipientAddress] = useState<string>('');
   const [transferAmount, setTransferAmount] = useState<string>('');
   const [destinationKYCInfo, setDestinationKYCInfo] = useState<KYCViewerInfo | null>(null);
-  
-  const kintoSDK = createKintoSDK('0xCFE10657E75385F0c93Ee7e0Aec266Ae9382E0ED');
-  const counterAddress = "0xCFE10657E75385F0c93Ee7e0Aec266Ae9382E0ED" as Address;
-  const paymentAddress = "0xCfe808D7994bB4b3741008B4c301688D4Cd4958C" as Address;
 
-  async function kintoLogin() {
-    try {
-      await kintoSDK.createNewWallet();
-    } catch (error) {
-      console.error('Failed to login/signup:', error);
+  useEffect(() => {
+    const initializeApp = async () => {
+      await fetchAccountInfo().then(setAccountInfo);
+      await fetchCounter().then(setCounter);
+    };
+    initializeApp();
+  }, []);
+
+  useEffect(() => {
+    if (accountInfo?.walletAddress) {
+      fetchKYCViewerInfo(accountInfo.walletAddress as Address).then(setKYCViewerInfo);
+      fetchTokenBalances(accountInfo.walletAddress as Address).then(setTokenBalances);
     }
-  }
+  }, [accountInfo]);
+
+  useEffect(() => {
+    if (recipientAddress && recipientAddress.length === 42) {
+      fetchDestinationKYC(recipientAddress as Address).then(setDestinationKYCInfo);
+    } else {
+      setDestinationKYCInfo(null);
+    }
+  }, [recipientAddress]);
+
+  const handleKintoLogin = async () => {
+    try {
+      await kintoLogin();
+      const newAccountInfo = await fetchAccountInfo();
+      setAccountInfo(newAccountInfo);
+    } catch (error) {
+      console.error('Failed to login:', error);
+    }
+  };
+
+  const handleIncreaseCounter = async () => {
+    setLoading(true);
+    try {
+      const newCounter = await increaseCounter();
+      setCounter(newCounter);
+    } catch (error) {
+      console.error('Failed to increase counter:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTransfer = async () => {
+    if (!selectedToken || !recipientAddress || !transferAmount || !accountInfo?.walletAddress) {
+      console.log('Transfer cancelled: missing information');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const amount = BigInt(parseFloat(transferAmount) * Math.pow(10, parseInt(selectedToken.decimals)));
+      await transferToken(selectedToken.contractAddress as Address, recipientAddress as Address, amount);
+      await fetchTokenBalances(accountInfo.walletAddress as Address).then(setTokenBalances);
+      setTransferAmount('');
+      setRecipientAddress('');
+      setSelectedToken(null);
+    } catch (error) {
+      console.error('Failed to transfer token:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const KYCInfoDisplay: React.FC<{ kycInfo: KYCViewerInfo; title: string }> = ({ kycInfo, title }) => (
     <KYCInfo>
@@ -100,211 +135,11 @@ const KintoConnect = () => {
     </KYCInfo>
   );
 
-  const fundTransferAbi = [
-    {
-      "inputs": [
-        {
-          "internalType": "address payable",
-          "name": "recipient",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "transferFunds",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "stateMutability": "payable",
-      "type": "receive"
-    }
-  ];
-  
-  async function transferFunds(recipient: string, amount: bigint) {
-    const data = encodeFunctionData({
-      abi: fundTransferAbi,
-      functionName: 'transferFunds',
-      args: [recipient, amount]
-    });
-    
-    setLoading(true);
-    try {
-      const response = await kintoSDK.sendTransaction([{ to: paymentAddress, data, value: amount }]);
-      console.log('Transfer successful:', response);
-    } catch (error) {
-      console.error('Failed to transfer funds:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const handleTransferFunds = async () => {
-    const recipientAddress = "0x79edB24F41Ec139dde29B6e604ed52954d643858" as Address;
-    const verySmallAmount = BigInt(10000000000000); // 0.00001 ETH en wei
-
-    try {
-      await transferFunds(recipientAddress, verySmallAmount);
-      console.log('Funds transferred successfully');
-    } catch (error) {
-      console.error('Failed to transfer funds:', error);
-    }
-  };
-  
-  async function fetchCounter() {
-    const client = createPublicClient({
-      chain: kinto,
-      transport: http(),
-    });
-    const counterContract = getContract({
-      address: counterAddress as Address,
-      abi: counterAbi,
-      client: { public: client }
-    });
-    const count = await counterContract.read.count([]) as BigInt;
-    setCounter(Number(count.toString()));
-  }
-
-  async function increaseCounter() {
-    const data = encodeFunctionData({
-      abi: counterAbi,
-      functionName: 'increment',
-      args: []
-    });
-    setLoading(true);
-    try {
-      await kintoSDK.sendTransaction([{ to: counterAddress, data, value: BigInt(0) }]);
-      await fetchCounter();
-    } catch (error) {
-      console.error('Failed to increase counter:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function fetchKYCViewerInfo() {
-    if (!accountInfo?.walletAddress) return;
-
-    const client = createPublicClient({
-      chain: kinto,
-      transport: http(),
-    });
-    const kycViewer = getContract({
-      address: contractsJSON.contracts.KYCViewer.address as Address,
-      abi: contractsJSON.contracts.KYCViewer.abi,
-      client: { public: client }
-    });
-
-    try {
-      const [isIndividual, isCorporate, isKYC, isSanctionsSafe, getCountry, getWalletOwners] = await Promise.all([
-        kycViewer.read.isIndividual([accountInfo.walletAddress]),
-        kycViewer.read.isCompany([accountInfo.walletAddress]),
-        kycViewer.read.isKYC([accountInfo.walletAddress]),
-        kycViewer.read.isSanctionsSafe([accountInfo.walletAddress]),
-        kycViewer.read.getCountry([accountInfo.walletAddress]),
-        kycViewer.read.getWalletOwners([accountInfo.walletAddress])
-      ]);
-
-      setKYCViewerInfo({
-        isIndividual,
-        isCorporate,
-        isKYC,
-        isSanctionsSafe,
-        getCountry,
-        getWalletOwners
-      } as KYCViewerInfo);
-    } catch (error) {
-      console.error('Failed to fetch KYC viewer info:', error);
-    }
-  }
-
-  async function fetchAccountInfo() {
-    try {
-      setAccountInfo(await kintoSDK.connect());
-    } catch (error) {
-      console.error('Failed to fetch account info:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchAccountInfo();
-    fetchCounter();
-  }, []);
-
-  useEffect(() => {
-    if (accountInfo?.walletAddress) {
-      fetchKYCViewerInfo();
-    }
-  }, [accountInfo]);
-
-  async function fetchTokenBalances() {
-    if (accountInfo?.walletAddress) {
-      const balances = await getERC20Balances(accountInfo.walletAddress);
-      console.log('Token balances:', balances);
-      setTokenBalances(balances);
-    }
-  }
-
-  const handleTransfer = async () => {
-    if (!selectedToken || !recipientAddress || !transferAmount || !accountInfo?.walletAddress) {
-      console.log('Transfer cancelled: missing information');
-      return;
-    }
-
-    try {
-      const amount = BigInt(parseFloat(transferAmount) * Math.pow(10, parseInt(selectedToken.decimals)));
-      const data = encodeFunctionData({
-        abi: [{"inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"}],
-        functionName: 'transfer',
-        args: [recipientAddress as Address, amount]
-      });
-
-      const response = await kintoSDK.sendTransaction([{ 
-        to: selectedToken.contractAddress as Address, 
-        data, 
-        value: BigInt(0) 
-      }]);
-
-      console.log('Transfer response:', response);
-      await fetchTokenBalances();
-      setTransferAmount('');
-      setRecipientAddress('');
-      setSelectedToken(null);
-    } catch (error) {
-      console.error('Failed to transfer token:', error);
-    }
-  };
-
-  const fetchDestinationKYC = async () => {
-    if (!recipientAddress) return;
-
-    const kycViewer = KYCViewerService.getInstance();
-    const info = await kycViewer.fetchKYCInfo(recipientAddress as Address);
-    setDestinationKYCInfo(info);
-  };
-
-  useEffect(() => {
-    fetchAccountInfo();
-  }, []);
-
-  useEffect(() => {
-    if (accountInfo?.walletAddress) {
-      fetchKYCViewerInfo();
-      fetchTokenBalances();
-    }
-  }, [accountInfo]);
-
-  useEffect(() => {
-    if (recipientAddress && recipientAddress.length === 42) {
-      fetchDestinationKYC();
-    } else {
-      setDestinationKYCInfo(null);
-    }
-  }, [recipientAddress]);
+  const CompressedAddress: React.FC<{ address: Address; className?: string }> = ({ address, className }) => (
+    <div className={className}>
+      {address.slice(0, 10)}...{address.slice(-10)}
+    </div>
+  );
 
   return (
     <WholeWrapper>
@@ -314,7 +149,7 @@ const KintoConnect = () => {
           {accountInfo ? (
             <>
               <CounterWrapper>
-                <Button variant="contained" color="primary" onClick={kintoLogin}>
+                <Button variant="contained" color="primary" onClick={handleKintoLogin}>
                   Login/Signup
                 </Button>
                 <WalletRows>
@@ -351,8 +186,8 @@ const KintoConnect = () => {
                     <WalletRowValue>{counter}</WalletRowValue>
                   </WalletRow>
                 </WalletRows>
-                <Button variant="contained" color="primary" onClick={increaseCounter}>
-                  Increase Counter
+                <Button variant="contained" color="primary" onClick={handleIncreaseCounter} disabled={loading}>
+                  {loading ? <CircularProgress size={24} /> : 'Increase Counter'}
                 </Button>
               </CounterWrapper>
               <ThreeColumnLayout>
@@ -429,8 +264,13 @@ const KintoConnect = () => {
                       value={transferAmount}
                       onChange={(e) => setTransferAmount(e.target.value)}
                     />
-                    <Button variant="contained" color="primary" onClick={handleTransfer} disabled={!selectedToken || !transferAmount || !recipientAddress}>
-                      Transfer
+                    <Button 
+                      variant="contained" 
+                      color="primary" 
+                      onClick={handleTransfer} 
+                      disabled={loading || !selectedToken || !transferAmount || !recipientAddress}
+                    >
+                      {loading ? <CircularProgress size={24} /> : 'Transfer'}
                     </Button>
                   </TransferSection>
                 </Column>
@@ -557,7 +397,6 @@ const ColumnContent = styled.div`
   gap: 20px;
   flex: 1;
 `;
-
 const ColumnHeader = styled.h2`
   font-size: 24px;
   font-weight: bold;
@@ -623,12 +462,6 @@ const KYCInfoValue = styled.span`
     margin-right: 5px;
   }
 `;
-
-const CompressedAddress: React.FC<{ address: Address; className?: string }> = ({ address, className }) => (
-  <div className={className}>
-    {address.slice(0, 10)}...{address.slice(-10)}
-  </div>
-);
 
 const ArrowColumn = styled.div`
   display: flex;

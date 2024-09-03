@@ -1,7 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import useForm from '../../hooks/useForm';
-import authService from './AuthService';
+import authService from '../authService';
+import { Address } from 'viem';
+import { createKintoSDK } from 'kinto-web-sdk';
+import { fetchAccountInfo, fetchKYCViewerInfo } from '../kinto/KintoFunctions';
+import { Button } from '@mui/material';
 
 declare global {
   interface Window {
@@ -17,6 +22,35 @@ const Register: React.FC = () => {
   const [publicKey, setPublicKey] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  
+  const kintoSDK = createKintoSDK('0xCFE10657E75385F0c93Ee7e0Aec266Ae9382E0ED');
+
+  async function kintoLogin() {
+    try {
+      await kintoSDK.createNewWallet();
+      var kycViewerInfo;
+      const accountInfo = await fetchAccountInfo();
+      console.log('Account Info:', accountInfo);
+
+      if (accountInfo.walletAddress) {
+      kycViewerInfo = await fetchKYCViewerInfo(accountInfo.walletAddress as Address);
+        console.log('KYC Viewer Info:', kycViewerInfo);
+      }
+
+      console.log('the account info are', accountInfo);
+
+      // Handle different conditions based on account info and KYC status
+      if (accountInfo.exists && kycViewerInfo?.isKYC) {
+        navigate("/dashboard");
+      } else if (accountInfo.exists && !accountInfo.approval) {
+        setError("Please complete your KYC on Kinto to use the application.");
+      } else {
+        setError("Please create or log in to your Kinto account to proceed.");
+      }
+    } catch (error) {
+      console.error('Failed to login/signup:', error);
+    }
+  }
 
   useEffect(() => {
     checkWalletConnection();
@@ -104,64 +138,21 @@ const Register: React.FC = () => {
           <form onSubmit={submit} className="space-y-4">
             {step === 1 ? (
               <>
-                <div>
-                  <label htmlFor="firstName" className="block mb-1 font-medium">First Name</label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    value={form.firstName}
-                    onChange={setFormValue}
-                    className="w-full px-3 py-2 border rounded-md"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="lastName" className="block mb-1 font-medium">Last Name</label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={form.lastName}
-                    onChange={setFormValue}
-                    className="w-full px-3 py-2 border rounded-md"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="email" className="block mb-1 font-medium">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={form.email}
-                    onChange={setFormValue}
-                    className="w-full px-3 py-2 border rounded-md"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="password" className="block mb-1 font-medium">Password</label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={form.password}
-                    onChange={setFormValue}
-                    className="w-full px-3 py-2 border rounded-md"
-                    required
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={handleNextStep}
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-                >
-                  Next
-                </button>
+                <Button variant="contained" color="primary" onClick={kintoLogin}>
+                  Login/Signup
+                </Button>
               </>
             ) : (
               <>
                 <div>
                   <h3 className="text-xl mb-4">Link a Wallet</h3>
                   <p className="mb-4 text-sm">
-                    By connecting your wallet, you agree to our Terms of Service and Privacy Policy. You acknowledge that you are solely responsible for the security of your wallet and any associated private keys. We are not responsible for any loss of funds resulting from compromised wallet security or unauthorized access. Please ensure you understand the risks involved in using blockchain technology before proceeding.
+                    By connecting your wallet, you agree to our Terms of Service and Privacy Policy.
+                    You acknowledge that you are solely responsible for the security of your wallet
+                    and any associated private keys. We are not responsible for any loss of funds
+                    resulting from compromised wallet security or unauthorized access. Please
+                    ensure you understand the risks involved in using blockchain technology before
+                    proceeding.
                   </p>
                   <button
                     type="button"
