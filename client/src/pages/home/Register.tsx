@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import useForm from '../../hooks/useForm';
@@ -6,7 +5,7 @@ import authService from '../authService';
 import { Address } from 'viem';
 import { createKintoSDK } from 'kinto-web-sdk';
 import { fetchAccountInfo, fetchKYCViewerInfo } from '../kinto/KintoFunctions';
-import { Button } from '@mui/material';
+import { Button, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress } from '@mui/material';
 
 declare global {
   interface Window {
@@ -17,46 +16,42 @@ declare global {
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const { type: accountType } = useParams<{ type: string }>();
-  const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [publicKey, setPublicKey] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
   
   const kintoSDK = createKintoSDK('0xCFE10657E75385F0c93Ee7e0Aec266Ae9382E0ED');
-
-  async function kintoLogin() {
-    try {
-      await kintoSDK.createNewWallet();
-      var kycViewerInfo;
-      const accountInfo = await fetchAccountInfo();
-      console.log('Account Info:', accountInfo);
-
-      if (accountInfo.walletAddress) {
-      kycViewerInfo = await fetchKYCViewerInfo(accountInfo.walletAddress as Address);
-        console.log('KYC Viewer Info:', kycViewerInfo);
-      }
-
-      console.log('the account info are', accountInfo);
-
-      // Handle different conditions based on account info and KYC status
-      if (accountInfo.exists && kycViewerInfo?.isKYC) {
-        navigate("/dashboard");
-      } else if (accountInfo.exists && !accountInfo.approval) {
-        setError("Please complete your KYC on Kinto to use the application.");
-      } else {
-        setError("Please create or log in to your Kinto account to proceed.");
-      }
-    } catch (error) {
-      console.error('Failed to login/signup:', error);
-    }
-  }
 
   useEffect(() => {
     checkWalletConnection();
   }, []);
 
+  useEffect(() => {
+    const handleKintoLoginComplete = async () => {
+      console.log("Kinto login completed");
+      const accountInfo = await fetchAccountInfo();
+      const kycViewerInfo = await fetchKYCViewerInfo(accountInfo.walletAddress as Address);
+      
+      if (accountInfo.exists && kycViewerInfo?.isKYC) {
+        setSuccess('Login successful! Redirecting to dashboard...');
+        setIsLoading(false);
+        navigate("/dashboard");
+      }
+    };
+
+    window.addEventListener('kintoLoginComplete', handleKintoLoginComplete);
+
+    return () => {
+      window.removeEventListener('kintoLoginComplete', handleKintoLoginComplete);
+    };
+  }, [navigate]);
+
   const checkWalletConnection = async () => {
+    setIsLoading(true);
     if (typeof window.ethereum !== 'undefined') {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
@@ -66,11 +61,66 @@ const Register: React.FC = () => {
         }
       } catch (error) {
         console.error("Failed to verify wallet connection:", error);
+        setError("Failed to verify wallet connection. Please try again.");
       }
+    } else {
+      setError("Wallet is not installed. Please install it to continue.");
+    }
+    setIsLoading(false);
+  };
+
+  const kintoLogin = async () => {
+    console.log("Starting Kinto login process");
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      console.log("Creating new wallet or logging in");
+      await kintoSDK.createNewWallet();
+      
+      // Add a delay to allow Kinto login to complete
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      console.log("Fetching account info");
+      const accountInfo = await fetchAccountInfo();
+      console.log('Account Info:', accountInfo);
+
+      if (!accountInfo.walletAddress) {
+        throw new Error('Wallet address not found');
+      }
+
+      console.log("Fetching KYC viewer info");
+      const kycViewerInfo = await fetchKYCViewerInfo(accountInfo.walletAddress as Address);
+      console.log('KYC Viewer Info:', kycViewerInfo);
+
+      if (accountInfo.exists && kycViewerInfo?.isKYC) {
+        console.log("Login successful, redirecting to dashboard");
+        setSuccess('Login successful! Redirecting to dashboard...');
+        setIsLoading(false);
+        navigate("/dashboard");
+      } else if (accountInfo.exists && !kycViewerInfo?.isKYC) {
+        console.log("KYC verification required");
+        setDialogMessage("Please complete your KYC verification on Kinto to use the application.");
+        setOpenDialog(true);
+        setIsLoading(false);
+      } else {
+        console.log("Account creation or login required");
+        setDialogMessage("Please create or log in to your Kinto account to proceed.");
+        setOpenDialog(true);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Failed to login/signup:', error);
+      setError('An error occurred during the login process. Please try again.');
+      setIsLoading(false);
     }
   };
 
   const connectWallet = async () => {
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
     if (typeof window.ethereum !== 'undefined') {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -85,6 +135,7 @@ const Register: React.FC = () => {
     } else {
       setError("Wallet is not installed. Please install it to continue.");
     }
+    setIsLoading(false);
   };
 
   const { form, setFormValue, submit } = useForm({
@@ -117,13 +168,13 @@ const Register: React.FC = () => {
     },
   });
 
-  const handleNextStep = () => {
-    if (form.firstName && form.lastName && form.email && form.password) {
-      setStep(2);
-    } else {
-      setError("Please fill in all fields before continuing.");
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-koi flex items-center justify-center">
+        <CircularProgress />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-koi flex">
@@ -136,47 +187,38 @@ const Register: React.FC = () => {
             Register as {accountType === "company" ? "Company" : "Provider"}
           </h2>
           <form onSubmit={submit} className="space-y-4">
-            {step === 1 ? (
-              <>
-                <Button variant="contained" color="primary" onClick={kintoLogin}>
-                  Login/Signup
-                </Button>
-              </>
-            ) : (
-              <>
-                <div>
-                  <h3 className="text-xl mb-4">Link a Wallet</h3>
-                  <p className="mb-4 text-sm">
-                    By connecting your wallet, you agree to our Terms of Service and Privacy Policy.
-                    You acknowledge that you are solely responsible for the security of your wallet
-                    and any associated private keys. We are not responsible for any loss of funds
-                    resulting from compromised wallet security or unauthorized access. Please
-                    ensure you understand the risks involved in using blockchain technology before
-                    proceeding.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={connectWallet}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mb-4"
-                    disabled={isWalletConnected}
-                  >
-                    {isWalletConnected ? 'Wallet Connected' : 'Connect Wallet'}
-                  </button>
-                </div>
-                <button
-                  type="submit"
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-                  disabled={!isWalletConnected}
-                >
-                  Complete Registration
-                </button>
-              </>
-            )}
+            <Button 
+              variant="contained" 
+              color="primary" 
+              onClick={kintoLogin}
+              fullWidth
+              disabled={isLoading}
+            >
+              {isLoading ? <CircularProgress size={24} /> : 'Login/Signup with Kinto'}
+            </Button>
+            <p className="text-center">or</p>
+            <button
+              type="button"
+              onClick={connectWallet}
+              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mb-4"
+              disabled={isWalletConnected || isLoading}
+            >
+              {isLoading ? <CircularProgress size={24} /> : (isWalletConnected ? 'Wallet Connected' : 'Connect Wallet')}
+            </button>
             {error && <p className="text-red-500 text-sm">{error}</p>}
             {success && <p className="text-green-500 text-sm">{success}</p>}
           </form>
         </div>
       </div>
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Action Required</DialogTitle>
+        <DialogContent>
+          <p>{dialogMessage}</p>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
