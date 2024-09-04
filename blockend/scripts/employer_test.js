@@ -3,12 +3,17 @@ require('dotenv').config();
 
 
 
-const employerAbi = [
+const employerAbi =  [
   {
     "inputs": [
       {
         "internalType": "address",
         "name": "initialOracleAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_textStorageAddress",
         "type": "address"
       }
     ],
@@ -54,6 +59,54 @@ const employerAbi = [
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "contractId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "extractedData",
+        "type": "string"
+      }
+    ],
+    "name": "TextExtracted",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "contractData",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isTextExtraction",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "messagesCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "extractedData",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -95,6 +148,25 @@ const employerAbi = [
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "contractId",
+        "type": "uint256"
+      }
+    ],
+    "name": "extractTextFromGeneratedContract",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -219,6 +291,25 @@ const employerAbi = [
       }
     ],
     "name": "getContractContent",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "reviewId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getExtractedText",
     "outputs": [
       {
         "internalType": "string",
@@ -377,11 +468,23 @@ const employerAbi = [
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "textStorageAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   }
-]
-
+];
 const PRIVATE_KEY = process.env.PRIVATE_KEY_GALADRIEL;
-const contractAddress = "0x5bD15a0E8d5B224C9c08f5b732cD77705235bB9e";
+const contractAddress = "0x96ec65327A760d9A7DD2C99675b12786db86dA04";
 const RPC_URL = "https://devnet.galadriel.com/"
 const provider = new ethers.JsonRpcProvider(RPC_URL);
 const wallet = new ethers.Wallet(PRIVATE_KEY, provider); 
