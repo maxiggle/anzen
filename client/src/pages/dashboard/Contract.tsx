@@ -98,7 +98,6 @@ export default function Contract() {
       };
     }
   );
-
   return (
     <div>
       <div className="flex flex-row justify-between items-center">
