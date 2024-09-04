@@ -68,7 +68,6 @@ export default function Contract() {
       },
     }));
   }
-  
 
   const contractsData = parseContractData(contracts);
   const result = contractsData.map(
