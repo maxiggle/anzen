@@ -1,503 +1,508 @@
+const { ethers } = require("ethers");
+require("dotenv").config();
 
-
-const { ethers } = require('ethers');
-require('dotenv').config();
-
-const employeeAbi = 
-[
+const employeeAbi = [
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "initialOracleAddress",
-        "type": "address"
+        internalType: "address",
+        name: "initialOracleAddress",
+        type: "address",
       },
       {
-        "internalType": "address",
-        "name": "_employerContractAddress",
-        "type": "address"
+        internalType: "address",
+        name: "_employerContractAddress",
+        type: "address",
       },
       {
-        "internalType": "address",
-        "name": "_textStorageAddress",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "_textStorageAddress",
+        type: "address",
+      },
     ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
+    stateMutability: "nonpayable",
+    type: "constructor",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "employerContractId",
-        "type": "uint256"
+        indexed: true,
+        internalType: "uint256",
+        name: "employerContractId",
+        type: "uint256",
       },
       {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "reviewId",
-        "type": "uint256"
+        indexed: true,
+        internalType: "uint256",
+        name: "reviewId",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "isApproved",
-        "type": "bool"
-      }
+        indexed: false,
+        internalType: "bool",
+        name: "isApproved",
+        type: "bool",
+      },
     ],
-    "name": "ContractReviewed",
-    "type": "event"
+    name: "ContractReviewed",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "string",
-        "name": "message",
-        "type": "string"
+        indexed: false,
+        internalType: "string",
+        name: "message",
+        type: "string",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "value",
-        "type": "uint256"
-      }
+        indexed: false,
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
     ],
-    "name": "Log",
-    "type": "event"
+    name: "Log",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "newOracleAddress",
-        "type": "address"
-      }
+        indexed: true,
+        internalType: "address",
+        name: "newOracleAddress",
+        type: "address",
+      },
     ],
-    "name": "OracleAddressUpdated",
-    "type": "event"
+    name: "OracleAddressUpdated",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "reviewId",
-        "type": "uint256"
-      }
+        indexed: true,
+        internalType: "uint256",
+        name: "reviewId",
+        type: "uint256",
+      },
     ],
-    "name": "ReviewContractCalled",
-    "type": "event"
+    name: "ReviewContractCalled",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "reviewId",
-        "type": "uint256"
+        indexed: true,
+        internalType: "uint256",
+        name: "reviewId",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "string",
-        "name": "extractedText",
-        "type": "string"
-      }
+        indexed: false,
+        internalType: "string",
+        name: "extractedText",
+        type: "string",
+      },
     ],
-    "name": "TextExtracted",
-    "type": "event"
+    name: "TextExtracted",
+    type: "event",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "reviewId",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "reviewId",
+        type: "uint256",
       },
       {
-        "internalType": "bool",
-        "name": "approval",
-        "type": "bool"
-      }
+        internalType: "bool",
+        name: "approval",
+        type: "bool",
+      },
     ],
-    "name": "approveContract",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "approveContract",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "name": "contractReviews",
-    "outputs": [
+    name: "contractReviews",
+    outputs: [
       {
-        "internalType": "address",
-        "name": "employee",
-        "type": "address"
+        internalType: "address",
+        name: "employee",
+        type: "address",
       },
       {
-        "internalType": "uint256",
-        "name": "employerContractId",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "employerContractId",
+        type: "uint256",
       },
       {
-        "internalType": "string",
-        "name": "review",
-        "type": "string"
+        internalType: "string",
+        name: "review",
+        type: "string",
       },
       {
-        "internalType": "bool",
-        "name": "isApproved",
-        "type": "bool"
+        internalType: "bool",
+        name: "isApproved",
+        type: "bool",
       },
       {
-        "internalType": "uint256",
-        "name": "messagesCount",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "messagesCount",
+        type: "uint256",
       },
       {
-        "internalType": "bool",
-        "name": "isTextExtraction",
-        "type": "bool"
-      }
+        internalType: "bool",
+        name: "isTextExtraction",
+        type: "bool",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "employerContractAddress",
-    "outputs": [
+    inputs: [],
+    name: "employerContractAddress",
+    outputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "contractid",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "contractid",
+        type: "uint256",
+      },
     ],
-    "name": "extractTextFromGeneratedContract",
-    "outputs": [
+    name: "extractTextFromGeneratedContract",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "reviewId",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "reviewId",
+        type: "uint256",
+      },
     ],
-    "name": "getExtractedText",
-    "outputs": [
+    name: "getExtractedText",
+    outputs: [
       {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "reviewId",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "reviewId",
+        type: "uint256",
+      },
     ],
-    "name": "getMessageHistory",
-    "outputs": [
+    name: "getMessageHistory",
+    outputs: [
       {
-        "components": [
+        components: [
           {
-            "internalType": "string",
-            "name": "role",
-            "type": "string"
+            internalType: "string",
+            name: "role",
+            type: "string",
           },
           {
-            "components": [
+            components: [
               {
-                "internalType": "string",
-                "name": "contentType",
-                "type": "string"
+                internalType: "string",
+                name: "contentType",
+                type: "string",
               },
               {
-                "internalType": "string",
-                "name": "value",
-                "type": "string"
-              }
+                internalType: "string",
+                name: "value",
+                type: "string",
+              },
             ],
-            "internalType": "struct IOracle.Content[]",
-            "name": "content",
-            "type": "tuple[]"
-          }
+            internalType: "struct IOracle.Content[]",
+            name: "content",
+            type: "tuple[]",
+          },
         ],
-        "internalType": "struct IOracle.Message[]",
-        "name": "",
-        "type": "tuple[]"
-      }
+        internalType: "struct IOracle.Message[]",
+        name: "",
+        type: "tuple[]",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "reviewId",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "reviewId",
+        type: "uint256",
+      },
     ],
-    "name": "getReviewContent",
-    "outputs": [
+    name: "getReviewContent",
+    outputs: [
       {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "runId",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "runId",
+        type: "uint256",
       },
       {
-        "components": [
+        components: [
           {
-            "internalType": "string",
-            "name": "id",
-            "type": "string"
+            internalType: "string",
+            name: "id",
+            type: "string",
           },
           {
-            "internalType": "string",
-            "name": "content",
-            "type": "string"
+            internalType: "string",
+            name: "content",
+            type: "string",
           },
           {
-            "internalType": "string",
-            "name": "functionName",
-            "type": "string"
+            internalType: "string",
+            name: "functionName",
+            type: "string",
           },
           {
-            "internalType": "string",
-            "name": "functionArguments",
-            "type": "string"
+            internalType: "string",
+            name: "functionArguments",
+            type: "string",
           },
           {
-            "internalType": "uint64",
-            "name": "created",
-            "type": "uint64"
+            internalType: "uint64",
+            name: "created",
+            type: "uint64",
           },
           {
-            "internalType": "string",
-            "name": "model",
-            "type": "string"
+            internalType: "string",
+            name: "model",
+            type: "string",
           },
           {
-            "internalType": "string",
-            "name": "systemFingerprint",
-            "type": "string"
+            internalType: "string",
+            name: "systemFingerprint",
+            type: "string",
           },
           {
-            "internalType": "string",
-            "name": "object",
-            "type": "string"
+            internalType: "string",
+            name: "object",
+            type: "string",
           },
           {
-            "internalType": "uint32",
-            "name": "completionTokens",
-            "type": "uint32"
+            internalType: "uint32",
+            name: "completionTokens",
+            type: "uint32",
           },
           {
-            "internalType": "uint32",
-            "name": "promptTokens",
-            "type": "uint32"
+            internalType: "uint32",
+            name: "promptTokens",
+            type: "uint32",
           },
           {
-            "internalType": "uint32",
-            "name": "totalTokens",
-            "type": "uint32"
-          }
+            internalType: "uint32",
+            name: "totalTokens",
+            type: "uint32",
+          },
         ],
-        "internalType": "struct IOracle.OpenAiResponse",
-        "name": "response",
-        "type": "tuple"
+        internalType: "struct IOracle.OpenAiResponse",
+        name: "response",
+        type: "tuple",
       },
       {
-        "internalType": "string",
-        "name": "errorMessage",
-        "type": "string"
-      }
+        internalType: "string",
+        name: "errorMessage",
+        type: "string",
+      },
     ],
-    "name": "onOracleOpenAiLlmResponse",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "onOracleOpenAiLlmResponse",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "oracleAddress",
-    "outputs": [
+    inputs: [],
+    name: "oracleAddress",
+    outputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "employerContractId",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "employerContractId",
+        type: "uint256",
       },
       {
-        "internalType": "string",
-        "name": "query",
-        "type": "string"
-      }
+        internalType: "string",
+        name: "query",
+        type: "string",
+      },
     ],
-    "name": "reviewContract",
-    "outputs": [
+    name: "reviewContract",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "newOracleAddress",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "newOracleAddress",
+        type: "address",
+      },
     ],
-    "name": "setOracleAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "setOracleAddress",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "textStorageAddress",
-    "outputs": [
+    inputs: [],
+    name: "textStorageAddress",
+    outputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "contractId",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "contractId",
+        type: "uint256",
+      },
     ],
-    "name": "viewGeneratedContract",
-    "outputs": [
+    name: "viewGeneratedContract",
+    outputs: [
       {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
-  }
+    stateMutability: "view",
+    type: "function",
+  },
 ];
 
-const PRIVATE_KEY = process.env.PRIVATE_KEY_GALADRIEL;
+const PRIVATE_KEY =
+  "659316b841409a9a83e12f67bd8047e88fe09d82318e14892f9d9ef41592a5f0";
 const contractAddress = "0x09a5733DF8951C9f78f91ce9a38E9Fe0e36b8b1c";
-const RPC_URL = "https://devnet.galadriel.com/"
+const RPC_URL = "https://devnet.galadriel.com/";
 const provider = new ethers.JsonRpcProvider(RPC_URL);
-const wallet = new ethers.Wallet(PRIVATE_KEY, provider); 
+const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
 const employeeAddress = "0xb8FCeb74C6c7e9DEaAcE41060747670d43475997";
 
-const employeeContract = new ethers.Contract(contractAddress, employeeAbi, wallet);
+const employeeContract = new ethers.Contract(
+  contractAddress,
+  employeeAbi,
+  wallet
+);
 
 async function reviewContract(employerContractId, query) {
-    // Call the contract function and wait for the transaction to be mined
-    const tx = await employeeContract.reviewContract(employerContractId, query);
+  // Call the contract function and wait for the transaction to be mined
+  const tx = await employeeContract.reviewContract(employerContractId, query);
 
-    // Wait for the transaction to be confirmed
-    const receipt = await tx.wait();
+  // Wait for the transaction to be confirmed
+  const receipt = await tx.wait();
 
-    const events = receipt.logs.map((log) => {
-        try {
-            return employeeContract.interface.parseLog(log);
-        } catch (e) {
-            return null; 
-        }
-    }).filter(e => e !== null);
-    // Assuming the function returns a uint256 (reviewId), capture it directly
-    console.log(events);
-   const  reviewId = events[0].args[0];
-   console.log('contract reviewed', reviewId);
-    return reviewId;
+  const events = receipt.logs
+    .map((log) => {
+      try {
+        return employeeContract.interface.parseLog(log);
+      } catch (e) {
+        return null;
+      }
+    })
+    .filter((e) => e !== null);
+  // Assuming the function returns a uint256 (reviewId), capture it directly
+  console.log(events);
+  const reviewId = events[0].args[0];
+  console.log("contract reviewed", reviewId);
+  return reviewId;
 }
 async function getReviewContent(reviewId) {
-    const content = await employeeContract.getReviewContent(reviewId);
-    console.log(content);
-    return content;
-    
+  const content = await employeeContract.getReviewContent(reviewId);
+  console.log(content);
+  return content;
 }
 
 async function viewGeneratedContract(contractId) {
-    const content = await employeeContract.viewGeneratedContract(contractId);
-    console.log(content);
-    return content;
+  const content = await employeeContract.viewGeneratedContract(contractId);
+  console.log(content);
+  return content;
 }
 
 async function extractTextFromGeneratedContract(contractId) {
-  const tx = await employeeContract.extractTextFromGeneratedContract(contractId);
+  const tx = await employeeContract.extractTextFromGeneratedContract(
+    contractId
+  );
   const receipt = await tx.wait();
   console.log("Transaction mined:", receipt);
   return receipt;
@@ -508,7 +513,6 @@ async function getExtractedText(contractId) {
   // const receipt = await content.wait();
   console.log(content);
   return content;
-  
 }
 
 async function main() {
@@ -543,4 +547,3 @@ async function main() {
 // }
 
 main().catch(console.error);
-
