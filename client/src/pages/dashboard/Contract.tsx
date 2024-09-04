@@ -10,6 +10,7 @@ import { truncateText } from "../../utils/TextUtils";
 
 export default function Contract() {
   const [show, setShow] = useState(false);
+  const [showList, setShowList] = useState(false);
   const { getAllContracts } = useContract();
   const [loading, setLoading] = useState(true);
   const [selectedContractContent, setSelectedContractContent] = useState<
@@ -83,7 +84,7 @@ export default function Contract() {
           <span
             onClick={() => {
               setSelectedContractContent(contract.contract.contractContent);
-              setShow(true);
+              setShowList(true);
             }}
             className="cursor-pointer text-blue-500"
           >
@@ -130,7 +131,7 @@ export default function Contract() {
       <Model state={show} size="3xl" setState={setShow}>
         <CreateContract />
       </Model>
-      <Model state={show} size="3xl" setState={setShow}>
+      <Model state={showList} size="3xl" setState={setShow}>
         {selectedContractContent && (
           <div className="p-4">
             <h3 className="text-xl font-semibold">Contract Content</h3>
