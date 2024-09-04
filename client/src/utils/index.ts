@@ -84,3 +84,22 @@ export const connect = {
     };
   },
 };
+
+
+export const isValidEthereumAddress = (address: string) => {
+  return /^0x[a-fA-F0-9]{40}$/.test(address);
+};
+
+export const getRelativeTimeLabel = (dateString: string) => {
+  const diff = new Date().getTime() - new Date(dateString).getTime();
+  const diffMinutes = Math.floor(diff / 1000 / 60);
+  const diffHours = Math.floor(diff / 1000 / 60 / 60);
+  const diffDays = Math.floor(diff / 1000 / 60 / 60 / 24);
+  const diffWeeks = Math.floor(diff / 1000 / 60 / 60 / 24 / 7);
+
+  if (diffMinutes < 60)
+    return `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+  return `${diffWeeks} week${diffWeeks > 1 ? "s" : ""} ago`;
+};
