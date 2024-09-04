@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 
-export default function ClientList() {
-  const [searchQuery, setSearchQuery] = useState("");
+export default function ClientList({ onSearch, onTyping, query }: any) {
   const [showButton, setShowButton] = useState(false);
 
   return (
@@ -16,8 +16,8 @@ export default function ClientList() {
             type="text"
             placeholder="Search clients..."
             className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={query}
+            onChange={onTyping}
             onBlur={() => setShowButton(true)}
             onFocus={() => setShowButton(false)}
           />
@@ -34,8 +34,11 @@ export default function ClientList() {
               />
             </svg>
           </div>
-          {showButton && searchQuery && (
-            <button className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+          {showButton && query && (
+            <button
+              onClick={onSearch}
+              className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
               Search
             </button>
           )}

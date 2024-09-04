@@ -1,64 +1,103 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import Bubble from "../../components/Chat/Bubble";
 import ClientList from "../../components/Chat/ClientList";
 import Button from "../../components/UI/Button";
 import EmojiSelect from "../../components/UI/EmojiSelect";
+import { Client } from "@xmtp/xmtp-js";
+import { ethers } from "ethers";
+import { BrowserProvider } from "ethers";
+import { connect } from "../../utils";
+import usePersistentState from "../../hooks/usePersistentState";
+import config from "../../utils/config";
+import { isValidAddress, useCanMessage, useClient } from "@xmtp/react-sdk";
 
 export default function Chat() {
-  const messages = [
-    {
-      isUser: true,
-      message: "Hello! How can I help you today?",
-      time: "10:00 AM",
-      status: "Sent",
+  const { client, error, isLoading, initialize } = useClient();
+  const { canMessage } = useCanMessage();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [isOnNetwork, setIsOnNetwork] = useState(false);
+
+  const [peerAddress, setPeerAddress] = useState("");
+
+  const handleAddressChange = useCallback(
+    (
+      e: React.KeyboardEvent<HTMLInputElement> & { target: { value: string } }
+    ) => {
+      setPeerAddress(e.target.value);
     },
-    {
-      isUser: false,
-      message: "Hi there! I have a question about my account.",
-      time: "10:02 AM",
-      status: "Received",
+    []
+  );
+
+  const handleCheckAddress = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      if (isValidAddress(peerAddress)) {
+        setIsLoading(true);
+        setIsOnNetwork(await canMessage(peerAddress));
+        setIsLoading(false);
+      } else {
+        setIsOnNetwork(false);
+      }
     },
-    {
-      isUser: true,
-      message:
-        "Of course! I'd be happy to assist you with your account. What specific question do you have?",
-      time: "10:05 AM",
-      status: "Sent",
-    },
-    {
-      isUser: false,
-      message:
-        "I'm trying to update my billing information, but I'm having trouble finding where to do that.",
-      time: "10:08 AM",
-      status: "Received",
-    },
-    {
-      isUser: true,
-      message:
-        "No problem! I can guide you through that process. First, go to your account settings by clicking on your profile picture in the top right corner.",
-      time: "10:10 AM",
-      status: "Sent",
-    },
-  ];
+    [peerAddress]
+  );
+
+  const handleConnect = useCallback(async () => {
+    const { signer, address } = await connect.viaBrowser();
+    const options = {
+      persistConversations: false,
+      env: "dev" as "production" | "local" | "dev",
+    };
+    const keys = await Client.getKeys(signer, {
+      env: "dev",
+      skipContactPublishing: true,
+      persistConversations: false,
+    });
+    await initialize({ keys, options, signer });
+  }, [initialize]);
+
+  if (error) {
+    return "An error occurred while initializing the client";
+  }
+
+  if (isLoading) {
+    return "Awaiting signatures...";
+  }
 
   return (
     <div>
       <div className="flex flex-row mb-6 justify-between items-center">
         <h2 className="text-lg font-semibold">Chats</h2>
         <div>
-          <Button loading={false} variant="primary">
+          <Button
+            loading={false}
+            onClick={() => handleConnect()}
+            variant="primary"
+          >
             Connect Chat
           </Button>
+          {/* {walletConnected && (
+            <Button loading={false} variant="primary">
+              Disconnect Chat
+            </Button>
+          )} */}
         </div>
       </div>
 
       <div className="flex h-[calc(100vh-200px)]">
         {/* Client list */}
         <div className="w-1/4 ">
-          <ClientList />
+          <ClientList
+            onTyping={handleAddressChange}
+            onSearch={handleCheckAddress}
+            query={peerAddress}
+          />
         </div>
 
         <div className="w-3/4 flex bg-white border rounded-lg flex-col">
-          <div className="flex-grow p-8  overflow-y-auto">
+          {/* <div className="flex-grow p-8  overflow-y-auto">
             {messages.map((e, i) => (
               <Bubble
                 key={i}
@@ -68,7 +107,9 @@ export default function Chat() {
                 status={e.status}
               />
             ))}
-          </div>
+          </div> */}
+
+          {peerAddress}
 
           <div className="p-4 border-t">
             <div className="flex items-center">
