@@ -1,8 +1,85 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from "react";
+import {
+  isValidAddress,
+  useCanMessage,
+  useConversations,
+} from "@xmtp/react-sdk";
+import React, { FormEvent, useCallback, useEffect, useState } from "react";
+import useChatStore from "../../store/useChatStore";
 
-export default function ClientList({ onSearch, onTyping, query }: any) {
+type ChangeEvent = React.ChangeEvent<HTMLInputElement> | undefined;
+
+export default function ClientList() {
+  const setNew = useChatStore((state) => state.setNewAddress);
+  const setConversation = useChatStore((state) => state.setConversation);
   const [showButton, setShowButton] = useState(false);
+  const [peerAddress, setPeerAddress] = useState("");
+  const [isOnNetwork, setIsOnNetwork] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { canMessage } = useCanMessage();
+
+  const {
+    error,
+    conversations,
+    isLoading: loadingConversations,
+  } = useConversations();
+
+  const handleAddressChange = useCallback((e: ChangeEvent) => {
+    setPeerAddress(e!.target.value);
+  }, []);
+
+  const checkAddressForExistingConversation = (address: string) => {
+    console.log(conversations);
+
+    if (conversations && conversations.length === 0) {
+      setNew(peerAddress);
+      return;
+    }
+
+    if (conversations && conversations.length > 0) {
+      const conversation = conversations.find((c) => c.peerAddress === address);
+      if (!conversation) {
+        console.log("hello", conversation);
+
+        setNew(peerAddress);
+      } else {
+        setConversation(conversation);
+      }
+    }
+  };
+
+  const handleCheckAddress = useCallback(
+    async (e: FormEvent) => {
+      try {
+        e.preventDefault();
+        if (isValidAddress(peerAddress)) {
+          setIsLoading(true);
+          if (await canMessage(peerAddress)) {
+            console.log("Entered");
+
+            checkAddressForExistingConversation(peerAddress);
+            setIsOnNetwork(true);
+          }
+          setIsLoading(false);
+        } else {
+          setIsOnNetwork(false);
+        }
+      } catch (error) {
+        alert(error);
+        console.log("error :>> ", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [peerAddress]
+  );
+
+  if (loadingConversations) return <div>Loading...</div>;
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
 
   return (
     <div className=" border rounded-lg bg-white border-gray-200 mr-4 overflow-y-auto">
@@ -10,14 +87,17 @@ export default function ClientList({ onSearch, onTyping, query }: any) {
         Clients
       </h3>
 
+      {isLoading && <div>Loading...</div>}
+      {isOnNetwork && <>Network is life</>}
+
       <div className="p-4 border-b border-gray-200">
         <div className="relative flex">
           <input
             type="text"
             placeholder="Search clients..."
             className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            value={query}
-            onChange={onTyping}
+            value={peerAddress}
+            onChange={handleAddressChange}
             onBlur={() => setShowButton(true)}
             onFocus={() => setShowButton(false)}
           />
@@ -34,9 +114,9 @@ export default function ClientList({ onSearch, onTyping, query }: any) {
               />
             </svg>
           </div>
-          {showButton && query && (
+          {showButton && peerAddress && (
             <button
-              onClick={onSearch}
+              onClick={handleCheckAddress}
               className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Search
@@ -45,7 +125,26 @@ export default function ClientList({ onSearch, onTyping, query }: any) {
         </div>
       </div>
 
-      <ul className="divide-y divide-gray-200">
+      {loadingConversations ? (
+        <div>Loading...</div>
+      ) : (
+        <ul className="divide-y divide-gray-200">
+          {conversations.map((e, i) => (
+            <li
+              key={i}
+              onClick={() => setConversation(e)}
+              className="p-4 hover:bg-gray-200 cursor-pointer transition duration-150 ease-in-out flex items-center"
+            >
+              <div className="w-8 h-8 bg-blue-500 rounded-full mr-3 flex items-center justify-center text-white font-semibold border border-blue-600">
+                {e.peerAddress.charAt(0)}
+              </div>
+              <span>{e.peerAddress}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {/* <ul className="divide-y divide-gray-200">
         {["Client 1", "Client 2", "Client 3"].map((client, index) => (
           <li
             key={index}
@@ -57,7 +156,7 @@ export default function ClientList({ onSearch, onTyping, query }: any) {
             <span>{client}</span>
           </li>
         ))}
-      </ul>
+      </ul> */}
     </div>
   );
 }
