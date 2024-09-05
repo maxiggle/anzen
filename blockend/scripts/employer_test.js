@@ -3,7 +3,7 @@ require('dotenv').config();
 
 
 
-const employerAbi =  [
+const employerAbi = [
   {
     "inputs": [
       {
@@ -50,6 +50,44 @@ const employerAbi =  [
     "inputs": [
       {
         "indexed": true,
+        "internalType": "uint256",
+        "name": "contractId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum ContractStatus",
+        "name": "status",
+        "type": "uint8"
+      }
+    ],
+    "name": "ContractStatusUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "message",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "Log",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "internalType": "address",
         "name": "newOracleAddress",
         "type": "address"
@@ -64,47 +102,18 @@ const employerAbi =  [
       {
         "indexed": true,
         "internalType": "uint256",
-        "name": "contractId",
+        "name": "attestjsonId",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "string",
-        "name": "extractedData",
+        "name": "extractedText",
         "type": "string"
       }
     ],
     "name": "TextExtracted",
     "type": "event"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "contractData",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "isTextExtraction",
-        "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "messagesCount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "extractedData",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
   },
   {
     "inputs": [
@@ -145,6 +154,16 @@ const employerAbi =  [
         "internalType": "uint256",
         "name": "createdAt",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isTextExtraction",
+        "type": "bool"
+      },
+      {
+        "internalType": "enum ContractStatus",
+        "name": "status",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -154,7 +173,7 @@ const employerAbi =  [
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "contractId",
+        "name": "contractid",
         "type": "uint256"
       }
     ],
@@ -262,6 +281,16 @@ const employerAbi =  [
             "internalType": "uint256",
             "name": "createdAt",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isTextExtraction",
+            "type": "bool"
+          },
+          {
+            "internalType": "enum ContractStatus",
+            "name": "status",
+            "type": "uint8"
           }
         ],
         "internalType": "struct EmployerContract.EmployerContractStruct[]",
@@ -296,6 +325,25 @@ const employerAbi =  [
         "internalType": "string",
         "name": "",
         "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "contractId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getContractStatus",
+    "outputs": [
+      {
+        "internalType": "enum ContractStatus",
+        "name": "",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -483,8 +531,9 @@ const employerAbi =  [
     "type": "function"
   }
 ];
+
 const PRIVATE_KEY = process.env.PRIVATE_KEY_GALADRIEL;
-const contractAddress = "0x96ec65327A760d9A7DD2C99675b12786db86dA04";
+const contractAddress = "0xF474dF4eD5eE1FA4F785C4B048042D525A3Ed44F";
 const RPC_URL = "https://devnet.galadriel.com/"
 const provider = new ethers.JsonRpcProvider(RPC_URL);
 const wallet = new ethers.Wallet(PRIVATE_KEY, provider); 
@@ -531,11 +580,32 @@ async function getAllContracts() {
   console.log("All Contracts: ", contracts);
 }
 
+async function extractTextFromGeneratedContract(contractId) {
+  const content = await employerContract.extractTextFromGeneratedContract(contractId);
+  console.log(`Contract Content for ID ${contractId}: ${content}`);
+}
+
+async function getExtractedText(contractId) {
+  const content = await employerContract.getExtractedText(contractId);
+  console.log(`Contract Content for ID ${contractId}: ${content}`);
+  
+}
+
+async function getContractStatus(contractId) {
+  const status = await employerContract.getContractStatus(contractId);
+  console.log(`Contract Status for ID ${contractId}: ${status}`);
+  
+}
+
 async function main() {
+  await extractTextFromGeneratedContract(1);
+  await getExtractedText(1);
+  // await generateContract(employeeAddress, "Position: Software Engineer; Salary: $100,000; Start Date: 2024-09-01")
+  await getContractStatus(2);
   // await getAllContracts();
-    await generateContract(employeeAddress, "Position: Software Engineer; Salary: $100,000; Start Date: 2024-09-01") 
+    // await generateContract(employeeAddress, "Position: Software Engineer; Salary: $100,000; Start Date: 2024-09-01") 
     // console.log("Generated ID: ", generatedId);
-    // await getContractContent(2);
+    // await getContractContent(1);
     // await getMessageHistory(1);
     
 }

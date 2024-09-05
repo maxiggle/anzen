@@ -17,7 +17,7 @@ async function main() {
     `Text storage deployed to ${textStorage.target}`
    );
 
-  const employer = await  ethers.deployContract("EmployerContract",[oracleAddress], {});
+  const employer = await  ethers.deployContract("EmployerContract",[oracleAddress, textStorage.target], {});
   await employer.waitForDeployment();
   console.log(
    `employer contract deployed to ${employer.target}`
