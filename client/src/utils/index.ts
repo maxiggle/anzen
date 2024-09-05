@@ -1,6 +1,7 @@
 import { BrowserProvider, JsonRpcProvider, Wallet } from "ethers";
 import { useLocation } from "react-router-dom";
 import config from "./config";
+import { Signer } from "ethers";
 
 export const ENCODING = "binary";
 export function isLinkActive(location: ReturnType<typeof useLocation>) {
@@ -66,16 +67,16 @@ export const connect = {
     };
   },
 
-  async viaBrowser() {
+  async viaBrowser(): Promise<{ address: string; signer: Signer; }> {
     const eth = getEthereumInstance();
-    if (!eth) return;
+    if (!eth) throw new Error("No Ethereum provider found");
 
     await window.ethereum!.request({
       method: "eth_requestAccounts",
     });
 
     const provider = new BrowserProvider(window.ethereum!);
-    const signer = await provider.getSigner();
+    const signer = await provider.getSigner() as Signer;
     const address = await signer.getAddress();
 
     return {
