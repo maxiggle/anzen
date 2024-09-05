@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.4.0",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "@rollup/plugin-inject": "^5.0.5",
@@ -17,18 +18,36 @@
     "@xmtp/content-type-remote-attachment": "^1.1.9",
     "@xmtp/content-type-reply": "^1.1.11",
     "@xmtp/react-sdk": "^8.0.1",
-    "@xmtp/xmtp-js": "^12.1.0",
     "buffer": "^6.0.3",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@ethsign/sp-sdk": "^0.7.2",
+    "@mui/material": "^6.0.1",
+    "@web3auth/base": "^8.12.4",
+    "@web3auth/ethereum-provider": "^8.12.4",
+    "@web3auth/modal": "^8.12.7",
+    "@xmtp/xmtp-js": "^12.1.0",
+    "antd": "^5.20.4",
+    "axios": "^1.7.7",
     "chart.js": "^4.4.4",
     "emoji-mart": "^5.6.0",
     "ethers": "^6.13.2",
+    "kinto-web-sdk": "^1.0.2",
+    "numeral": "^2.0.6",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.3.1",
     "react-icons": "^5.3.0",
     "react-markdown": "^9.0.1",
+<<<<<<< HEAD
     "react-router-dom": "^6.26.1",
     "zustand": "^4.5.5"
+=======
+    "react-number-format": "^5.4.1",
+    "react-router-dom": "^6.26.1",
+    "styled-components": "^6.1.13",
+    "viem": "^2.21.1"
+>>>>>>> e9ee5429172fd8f87a6d7f14b75ea5f69eb66a6a
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

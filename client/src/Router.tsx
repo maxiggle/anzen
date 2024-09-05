@@ -14,6 +14,9 @@ import DashboardInvoices from "./pages/dashboard/Invoices";
 import DashboardSupport from "./pages/dashboard/Support";
 import DashboardSettings from "./pages/dashboard/Settings";
 import DashboardChat from "./pages/dashboard/Chat";
+import EmployeeDashBoard from "./pages/dashboard/Employeedashboard";
+import KintoConnect from "./pages/kinto/KintoConnect";
+// import SignProtocol from "./pages/dashboard/SignProtocol"
 
 const App: React.FC = () => {
   return (
@@ -33,6 +36,9 @@ const App: React.FC = () => {
           <Route path="/dashboard/invoices" element={<DashboardInvoices />} />
           <Route path="/dashboard/support" element={<DashboardSupport />} />
           <Route path="/dashboard/settings" element={<DashboardSettings />} />
+          <Route path="/dashboard/employee" element={<EmployeeDashBoard />} />
+          <Route path="/kinto/KintoConnect" element={<KintoConnect/>} />
+          {/* <Route path="/kinto/SignProtocol" element={<SignProtocol/>} /> */}
         </Route>
       </Routes>
     </Router>

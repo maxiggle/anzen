@@ -58,6 +58,14 @@ export default function Navbar() {
                 Chats
               </ELink>
             </li>
+            <li>
+              <ELink to={"/dashboard/employee"} className="dashboard__nav_item">
+                <span className="material-symbols-outlined -mt-[2px]">
+                  conversion_path
+                </span>
+                Employee
+              </ELink>
+            </li>
             <li className="px-4 uppercase text-xs text-gray-400 mt-6 font-semibold">
               Help Center
             </li>
