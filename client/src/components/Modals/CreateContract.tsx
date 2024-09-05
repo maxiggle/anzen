@@ -1,26 +1,59 @@
 import useContract from "../../hooks/useContract";
 import Button from "../UI/Button";
 import config from "../../utils/config";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
+import useEventStore from "../../store/useEventStore";
 
 export default function CreateContract() {
-  const { create, getContractContent } = useContract();
+  const { create, getContractContent, listenForContractEvents } = useContract();
+  const contractId = useEventStore((state) => state.contractId);
+  const contractStatus = useEventStore((state) => state.contractStatus);
+
   const [contractContent, setContractContent] = useState("");
+  const [contractTerms, setContractTerms] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isNewContractRequested, setIsNewContractRequested] = useState(false);
   const printTarget = useRef<HTMLDivElement>(null);
 
-  async function handleCreateContractAndReturnContent(): Promise<void> {
+  const handleCreateContractAndReturnContent = useCallback(async () => {
     setIsGenerating(true);
-    const contractId = await create(
-      config.employeeAddress,
-      "Position: Software Engineer; Salary: $100,000; Start Date: 2024-09-01"
-    );
-    const content = await getContractContent(+contractId.toString() - 1);
-    setContractContent(content);
-    setIsGenerating(false);
-  }
+    setIsNewContractRequested(true);
+    setContractContent(""); // Clear existing content
+    const newContractId = await create(config.employeeAddress, contractTerms);
+    console.log("New contract created with ID:", newContractId.toString());
+  }, [create, contractTerms]);
+
+  useEffect(() => {
+    const cleanup = listenForContractEvents();
+    return cleanup;
+  }, [listenForContractEvents]);
+
+  useEffect(() => {
+    async function fetchContractContent() {
+      if (
+        contractId !== null &&
+        contractStatus === 1 &&
+        isNewContractRequested
+      ) {
+        try {
+          const content = await getContractContent(contractId);
+          setContractContent(content);
+        } catch (error) {
+          console.error("Error fetching contract content:", error);
+          setContractContent(
+            "Error fetching contract content. Please try again."
+          );
+        } finally {
+          setIsGenerating(false);
+          setIsNewContractRequested(false);
+        }
+      }
+    }
+
+    fetchContractContent();
+  }, [contractId, contractStatus, getContractContent, isNewContractRequested]);
 
   useEffect(() => {
     if (isPrinting) {
@@ -68,6 +101,8 @@ export default function CreateContract() {
                 className="w-full mb-3 p-3 border-2 rounded-lg"
                 cols={4}
                 rows={4}
+                value={contractTerms}
+                onChange={(e) => setContractTerms(e.target.value)}
               ></textarea>
             </div>
             <Button
@@ -88,7 +123,10 @@ export default function CreateContract() {
           >
             <ReactMarkdown>{contractContent}</ReactMarkdown>
           </div>
-          <div className="flex gap-2 justify-end">
+          <div className="flex gap-2 justify-center">
+            <Button variant="outline" loading={isGenerating} onClick={() => {}}>
+              Sign Contract
+            </Button>
             <Button
               variant="outline"
               loading={isGenerating}

@@ -3,8 +3,12 @@ import { createRoot } from "react-dom/client";
 import Router from "./Router.tsx";
 import "./assets/css/index.css";
 
+import { XMTPProvider } from "@xmtp/react-sdk";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Router />
+    <XMTPProvider>
+      <Router />
+    </XMTPProvider>
   </StrictMode>
 );

@@ -26,6 +26,7 @@ export default function Contract() {
     async function loadContracts() {
       try {
         const fetchedContracts = await getAllContracts();
+        console.log("Fetched contracts:", fetchedContracts);
         setContracts(fetchedContracts);
       } catch (error) {
         console.error("Failed to fetch contracts:", error);
@@ -39,10 +40,6 @@ export default function Contract() {
 
   if (loading) {
     return <div>Loading...</div>;
-  }
-
-  if (!contracts) {
-    return <div>No contracts found.</div>;
   }
 
   const headers = [
@@ -71,7 +68,7 @@ export default function Contract() {
     }));
   }
 
-  const contractsData = parseContractData(contracts);
+  const contractsData = contracts ? parseContractData(contracts) : [];
   const result = contractsData.map(
     (contract: ContractResult, index: number) => {
       const truncatedContent = truncateText(
@@ -99,7 +96,6 @@ export default function Contract() {
       };
     }
   );
-
   return (
     <div>
       <div className="flex flex-row justify-between items-center">
