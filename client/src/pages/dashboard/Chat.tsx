@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FormEvent, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import ClientList from "../../components/Chat/ClientList";
 import Button from "../../components/UI/Button";
 import { Client } from "@xmtp/xmtp-js";
 import { connect } from "../../utils";
-import { isValidAddress, useCanMessage, useClient } from "@xmtp/react-sdk";
+import { useClient } from "@xmtp/react-sdk";
 import ChatBox from "../../components/Chat/ChatBox";
 
 export default function Chat() {
@@ -14,17 +14,22 @@ export default function Chat() {
   const handleConnect = useCallback(async () => {
     const { signer, address } = await connect.viaBrowser();
     setUserWalletAddress(address);
-    const options = {
-      persistConversations: false,
-      env: "dev" as "production" | "local" | "dev",
-    };
+
     const keys = await Client.getKeys(signer, {
       env: "dev",
       skipContactPublishing: true,
       persistConversations: false,
     });
-    await initialize({ keys, options, signer });
-  }, [initialize]);
+
+    await initialize({
+      keys,
+      signer,
+      options: {
+        persistConversations: false,
+        env: "dev" as "production" | "local" | "dev",
+      },
+    });
+  }, []);
 
   if (error) {
     return "An error occurred while initializing the client";
@@ -46,16 +51,11 @@ export default function Chat() {
           >
             Connect Chat
           </Button>
-          {/* {walletConnected && (
-            <Button loading={false} variant="primary">
-              Disconnect Chat
-            </Button>
-          )} */}
         </div>
       </div>
 
       {client ? (
-        <div className="flex flex-row w-full h-[calc(100vh-200px)]">
+        <div className="flex flex-row w-full gap-5 h-[calc(100vh-200px)]">
           <div className="w-2/3">
             <ChatBox userAddress={userWalletAddress} />
           </div>

@@ -61,7 +61,7 @@ export default function Navbar() {
             <li>
               <ELink to={"/dashboard/employee"} className="dashboard__nav_item">
                 <span className="material-symbols-outlined -mt-[2px]">
-                  conversion_path
+                  person_apron
                 </span>
                 Employee
               </ELink>

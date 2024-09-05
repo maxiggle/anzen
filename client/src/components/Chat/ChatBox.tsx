@@ -2,30 +2,31 @@
 import { ChangeEvent, useCallback, useState } from "react";
 import Button from "../UI/Button";
 import EmojiSelect from "../UI/EmojiSelect";
-import Bubble from "./Bubble";
+
 import {
-  // DecodedMessage,
-  // isValidAddress,
-  useMessages,
   useSendMessage,
   useStartConversation,
 } from "@xmtp/react-sdk";
 import useChatStore from "../../store/useChatStore";
+import Messages from "./Messages";
 
-export default function ChatBox({ userAddress: ua }: any) {
+interface IProps {
+  userAddress: string;
+}
+
+export default function ChatBox({ userAddress }: IProps) {
   const newAddress = useChatStore((state) => state.newAddress);
   const conversation = useChatStore((state) => state.conversation);
-  const userAddress = useChatStore((state) => state.userAddress);
+
   const { startConversation } = useStartConversation();
+  const { sendMessage } = useSendMessage();
+
   const [isSending, setIsSending] = useState(false);
   const [message, setMessage] = useState("");
-  // const [cmessage, setCMessage] = useState("");
-  // const [loading, setLoading] = useState(false);
 
   const handleStartConversation = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      console.log("STarting", newAddress, message);
 
       if (newAddress && message) {
         setIsSending(true);
@@ -35,10 +36,6 @@ export default function ChatBox({ userAddress: ua }: any) {
     },
     [userAddress, startConversation]
   );
-
-  // Messages
-
-  const { sendMessage } = useSendMessage();
 
   const handleMessageChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -50,7 +47,6 @@ export default function ChatBox({ userAddress: ua }: any) {
   const handleSendMessage = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      console.log("Entering...", message, conversation);
 
       if (conversation && message) {
         setIsSending(true);
@@ -58,31 +54,11 @@ export default function ChatBox({ userAddress: ua }: any) {
         setIsSending(false);
       }
     },
-    [message, userAddress, sendMessage]
+    [conversation, message]
   );
 
-  // const error = null;
-  // const messages = [] as any[];
-  // // const isLoading = false;
-  const { error, messages, isLoading } = useMessages(conversation, {
-    onError: useCallback((err: Error) => {
-      console.log({ err });
-    }, []),
-    onMessages: useCallback((msgs: DecodedMessage[]) => {
-      console.log({ msgs });
-    }, []),
-  });
-
-  if (error) {
-    return "An error occurred while loading messages";
-  }
-
-  if (isLoading) {
-    return "Loading messages...";
-  }
-
   return (
-    <div className="w-3/4 flex bg-white border rounded-lg flex-col">
+    <div className="w-full flex bg-white relative  border rounded-lg flex-col">
       <div className="flex-grow p-8 w-full  max-h-[80vh] overflow-y-auto">
         {newAddress && (
           <div className="flex flex-col items-center justify-center h-full">
@@ -96,29 +72,18 @@ export default function ChatBox({ userAddress: ua }: any) {
         )}
 
         {conversation && (
-          <div className="flex flex-col items-center justify-center h-full">
-            <h1 className="text-lg font-bold mb-4">
-              You are now chatting with {conversation.peerAddress}
-            </h1>
-            <p className="text-gray-600 mb-4">
-              Start a conversation by typing a message below. ---
-            </p>
+          <div className="flex flex-col px-5 py-3 items-center absolute z-10 w-full left-0 bg-white top-0 self-start justify-center">
+            <p>You are now chatting with</p>
+            <h1 className="text-lg font-bold">{conversation.peerAddress}</h1>
           </div>
         )}
 
-        {/* <button onClick={handleStartConversation}>Start A Conversationn</button> */}
-        {messages.map((e, i) => (
-          <>
-            {e.senderAddress === ua ? "true" : "false"}
-            <Bubble
-              key={i}
-              isUser={e.senderAddress === ua}
-              time={e.sentAt.toLocaleString()}
-              message={e.content}
-              status={e.status}
-            />
-          </>
-        ))}
+        {conversation && (
+          <Messages
+            currentUserAddress={userAddress}
+            conversation={conversation}
+          />
+        )}
       </div>
 
       <div className="p-4 border-t">

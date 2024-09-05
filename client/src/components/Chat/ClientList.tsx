@@ -10,7 +10,7 @@ import useChatStore from "../../store/useChatStore";
 type ChangeEvent = React.ChangeEvent<HTMLInputElement> | undefined;
 
 export default function ClientList() {
-  const setNew = useChatStore((state) => state.setNewAddress);
+  const setNewAddress = useChatStore((state) => state.setNewAddress);
   const setConversation = useChatStore((state) => state.setConversation);
   const [showButton, setShowButton] = useState(false);
   const [peerAddress, setPeerAddress] = useState("");
@@ -30,19 +30,15 @@ export default function ClientList() {
   }, []);
 
   const checkAddressForExistingConversation = (address: string) => {
-    console.log(conversations);
-
     if (conversations && conversations.length === 0) {
-      setNew(peerAddress);
+      setNewAddress(peerAddress);
       return;
     }
 
     if (conversations && conversations.length > 0) {
       const conversation = conversations.find((c) => c.peerAddress === address);
       if (!conversation) {
-        console.log("hello", conversation);
-
-        setNew(peerAddress);
+        setNewAddress(peerAddress);
       } else {
         setConversation(conversation);
       }
@@ -56,8 +52,6 @@ export default function ClientList() {
         if (isValidAddress(peerAddress)) {
           setIsLoading(true);
           if (await canMessage(peerAddress)) {
-            console.log("Entered");
-
             checkAddressForExistingConversation(peerAddress);
             setIsOnNetwork(true);
           }
@@ -67,7 +61,6 @@ export default function ClientList() {
         }
       } catch (error) {
         alert(error);
-        console.log("error :>> ", error);
       } finally {
         setIsLoading(false);
       }
@@ -88,7 +81,7 @@ export default function ClientList() {
       </h3>
 
       {isLoading && <div>Loading...</div>}
-      {isOnNetwork && <>Network is life</>}
+      {isOnNetwork && <div>Network is life</div>}
 
       <div className="p-4 border-b border-gray-200">
         <div className="relative flex">
@@ -135,28 +128,18 @@ export default function ClientList() {
               onClick={() => setConversation(e)}
               className="p-4 hover:bg-gray-200 cursor-pointer transition duration-150 ease-in-out flex items-center"
             >
-              <div className="w-8 h-8 bg-blue-500 rounded-full mr-3 flex items-center justify-center text-white font-semibold border border-blue-600">
-                {e.peerAddress.charAt(0)}
+              <div>
+                <div className="w-8 h-8 bg-blue-500 rounded-full mr-3 flex items-center justify-center text-white font-semibold border border-blue-600">
+                  {e.peerAddress.charAt(0)}x{e.peerAddress.charAt(2)}
+                </div>
               </div>
-              <span>{e.peerAddress}</span>
+              <span className=" flex w-full overflow-hidden">
+                {e.peerAddress}
+              </span>
             </li>
           ))}
         </ul>
       )}
-
-      {/* <ul className="divide-y divide-gray-200">
-        {["Client 1", "Client 2", "Client 3"].map((client, index) => (
-          <li
-            key={index}
-            className="p-4 hover:bg-gray-200 cursor-pointer transition duration-150 ease-in-out flex items-center"
-          >
-            <div className="w-8 h-8 bg-blue-500 rounded-full mr-3 flex items-center justify-center text-white font-semibold border border-blue-600">
-              {client.charAt(0)}
-            </div>
-            <span>{client}</span>
-          </li>
-        ))}
-      </ul> */}
     </div>
   );
 }
