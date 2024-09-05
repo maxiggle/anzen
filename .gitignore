@@ -8,3 +8,4 @@ client/src/pages/kinto/start-react-https.bat
 client/vite.config.js
 client/certs
 api/src/.env
+.env

@@ -7,6 +7,8 @@ import CreateContract from "../../components/Modals/CreateContract";
 import useContract from "../../hooks/useContract";
 import { ContractResult } from "../../utils/types";
 import { truncateText } from "../../utils/TextUtils";
+import AttestationApp from './SignProtocol'
+
 
 export default function Contract() {
   const [show, setShow] = useState(false);
@@ -126,6 +128,7 @@ export default function Contract() {
           data={result}
           headers={headers}
         />
+        <AttestationApp/>
       </div>
 
       <Model state={show} size="3xl" setState={setShow}>

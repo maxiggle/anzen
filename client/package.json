@@ -36,7 +36,8 @@
     "react-number-format": "^5.4.1",
     "react-router-dom": "^6.26.1",
     "styled-components": "^6.1.13",
-    "viem": "^2.21.1"
+    "viem": "^2.21.1",
+    "web3": "^4.12.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

@@ -132,7 +132,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-app.post("/api/associate-wallet", authenticate, async (req, res) => {
+app.post("/api/associate-wallet", async (req, res) => {
   try {
     const { publicKey } = req.body;
     await db.run("UPDATE users SET publicKey = ? WHERE id = ?", [
@@ -147,7 +147,7 @@ app.post("/api/associate-wallet", authenticate, async (req, res) => {
   }
 });
 
-app.get("/api/user", authenticate, async (req, res) => {
+app.get("/api/user", async (req, res) => {
   try {
     const user = await db.get(
       "SELECT id, firstName, lastName, email, publicKey FROM users WHERE id = ?",
@@ -162,6 +162,43 @@ app.get("/api/user", authenticate, async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching user data", error: error.message });
+  }
+});
+
+async function getSignerInfo(address) {
+  try {
+    const user = await db.get("SELECT email FROM users WHERE publicKey = ?", [
+      address,
+    ]);
+    return user ? user.email : null;
+  } catch (error) {
+    console.error("Error fetching signer info:", error);
+    return null;
+  }
+}
+
+app.post("/api/notify-signers", async (req, res) => {
+  try {
+    const { attestationId, signerAddresses } = req.body;
+
+    console.log("we are in the notification", attestationId);
+    console.log("we are in the notification", signerAddresses);
+
+    for (const address of signerAddresses) {
+      const signerEmail = await getSignerInfo(address);
+      if (signerEmail) {
+        console.log(
+          `Notification sent to ${signerEmail} for attestation ${attestationId}`
+        );
+      }
+    }
+
+    res.json({ message: "Notifications sent successfully" });
+  } catch (error) {
+    console.error("Error sending notifications:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to send notifications", error: error.message });
   }
 });
 

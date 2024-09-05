@@ -547,3 +547,4 @@ async function main() {
 // }
 
 main().catch(console.error);
+module.exports = { getExtractedText };

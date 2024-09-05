@@ -20,7 +20,15 @@ import {
   fetchAccountInfo,
   fetchTokenBalances,
   transferToken,
-  fetchDestinationKYC
+  setupAndRunMonthlyTransfer,
+  fetchDestinationKYC,
+  initializeBudgetAllocation, 
+  allocateBudget, 
+  authorizeUser, 
+  unauthorizeUser, 
+  withdrawFunds, 
+  getContractBalance, 
+  getUserAllocation 
 } from './KintoFunctions';
 
 interface KYCViewerInfo {
@@ -32,6 +40,14 @@ interface KYCViewerInfo {
   getWalletOwners: Address[];
 }
 
+export const receipient = "0x79edB24F41Ec139dde29B6e604ed52954d643858" as Address;
+export const tokenAddress = "0x0E7000967bcB5fC76A5A89082db04ed0Bf9548d8" as Address;
+export const amount = BigInt("500000000000000");
+export const totalAmount = BigInt("1000000000000000");
+
+
+
+
 const KintoConnect: React.FC = () => {
   const [accountInfo, setAccountInfo] = useState<KintoAccountInfo | undefined>(undefined);
   const [kycViewerInfo, setKYCViewerInfo] = useState<KYCViewerInfo | undefined>(undefined);
@@ -42,6 +58,16 @@ const KintoConnect: React.FC = () => {
   const [recipientAddress, setRecipientAddress] = useState<string>('');
   const [transferAmount, setTransferAmount] = useState<string>('');
   const [destinationKYCInfo, setDestinationKYCInfo] = useState<KYCViewerInfo | null>(null);
+
+  const handleSetupAndRunMonthlyTransfer = async () => {
+    try {
+      await setupAndRunMonthlyTransfer(receipient, amount, tokenAddress, totalAmount);
+      // Optionally update state or show a success message
+    } catch (error) {
+      console.error('Failed to setup monthly transfer:', error);
+      // Optionally show an error message to the user
+    }
+  };
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -75,12 +101,14 @@ const KintoConnect: React.FC = () => {
       console.error('Failed to login:', error);
     }
   };
+  
 
   const handleIncreaseCounter = async () => {
     setLoading(true);
     try {
-      const newCounter = await increaseCounter();
-      setCounter(newCounter);
+      // const newCounter = await increaseCounter();
+      // setCounter(newCounter);
+      await initializeBudgetAllocation(tokenAddress);
     } catch (error) {
       console.error('Failed to increase counter:', error);
     } finally {

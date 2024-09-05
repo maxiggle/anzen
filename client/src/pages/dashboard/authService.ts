@@ -27,12 +27,9 @@ const authService = {
       throw new Error(errorData.message || 'Login failed');
     }
 
-    const authResponse = await response.json();
-    
-    localStorage.setItem('token', authResponse.token);
-    
-    return authResponse;
+    return response.json();
   },
+
   
   register: async (firstName: string, lastName: string, email: string, password: string, publicKey: string): Promise<AuthResponse> => {
     const response = await fetch(`${API_URL}/register`, {
@@ -77,22 +74,6 @@ const authService = {
   
     if (!response.ok) {
       throw new Error('Failed to associate wallet');
-    }
-  },
-
-  notifySigners: async (attestationId: string, signerAddresses: string[]): Promise<void> => {
-    
-    const response = await fetch(`${API_URL}/notify-signers`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ attestationId, signerAddresses })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to send notifications');
     }
   },
 };
