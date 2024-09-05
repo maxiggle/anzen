@@ -43,9 +43,21 @@ export default function useContract() {
     return result;
   }
 
+  async function generateAttestation(contractId: number): Promise<bigint> {
+    const attestId = await employerContract.extractTextFromGeneratedContract(
+      contractId
+    );
+    console.log("attestId", attestId);
+    return attestId;
+  }
+  async function getAttestation(contractId: number): Promise<string> {
+    return employerContract.getExtractedText(contractId);
+  }
   return {
     create,
     getContractContent,
     getAllContracts,
+    generateAttestation,
+    getAttestation,
   };
 }

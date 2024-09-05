@@ -6,17 +6,22 @@ import ReactMarkdown from "react-markdown";
 
 export default function CreateContract() {
   const { create, getContractContent } = useContract();
+
   const [contractContent, setContractContent] = useState("");
+  const [contractTerms, setContractTerms] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const printTarget = useRef<HTMLDivElement>(null);
 
+  // Function to handle creating a contract and fetching content
   async function handleCreateContractAndReturnContent(): Promise<void> {
     setIsGenerating(true);
-    const contractId = await create(
-      config.employeeAddress,
-      "Position: Software Engineer; Salary: $100,000; Start Date: 2024-09-01"
-    );
+    const contractId = await create(config.employeeAddress, contractTerms);
+    if (contractId) {
+      console.log("Contract created with ID:", contractId);
+    } else {
+      console.error("Failed to create contract.", status);
+    }
     const content = await getContractContent(+contractId.toString() - 1);
     setContractContent(content);
     setIsGenerating(false);
@@ -68,6 +73,8 @@ export default function CreateContract() {
                 className="w-full mb-3 p-3 border-2 rounded-lg"
                 cols={4}
                 rows={4}
+                value={contractTerms}
+                onChange={(e) => setContractTerms(e.target.value)}
               ></textarea>
             </div>
             <Button
@@ -88,7 +95,10 @@ export default function CreateContract() {
           >
             <ReactMarkdown>{contractContent}</ReactMarkdown>
           </div>
-          <div className="flex gap-2 justify-end">
+          <div className="flex gap-2 justify-center">
+            <Button variant="outline" loading={isGenerating} onClick={() => {}}>
+              Sign Contract
+            </Button>
             <Button
               variant="outline"
               loading={isGenerating}

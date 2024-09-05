@@ -68,9 +68,8 @@ export default function Contract() {
       },
     }));
   }
-  
 
-  const contractsData = parseContractData(contracts);
+  const contractsData = contracts ? parseContractData(contracts) : [];
   const result = contractsData.map(
     (contract: ContractResult, index: number) => {
       const truncatedContent = truncateText(
