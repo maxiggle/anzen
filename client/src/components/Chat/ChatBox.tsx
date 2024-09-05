@@ -2,7 +2,11 @@
 import { ChangeEvent, useCallback, useState } from "react";
 import Button from "../UI/Button";
 import EmojiSelect from "../UI/EmojiSelect";
-import { useSendMessage, useStartConversation } from "@xmtp/react-sdk";
+
+import {
+  useSendMessage,
+  useStartConversation,
+} from "@xmtp/react-sdk";
 import useChatStore from "../../store/useChatStore";
 import Messages from "./Messages";
 

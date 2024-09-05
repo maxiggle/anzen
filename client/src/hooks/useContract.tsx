@@ -1,8 +1,11 @@
 import { ethers } from "ethers";
 import config from "../utils/config";
 import { ContractResult } from "../utils/types";
+import useEventStore from "../store/useEventStore";
 
 export default function useContract() {
+  const setContractId = useEventStore((state) => state.setContractId);
+  const setContractStatus = useEventStore((state) => state.setContractStatus);
   const provider = new ethers.JsonRpcProvider(config.galadrielRpcUrl);
   const signer = new ethers.Wallet(config.galadrielPrivateKey, provider);
   const employerContract = new ethers.Contract(
@@ -34,6 +37,18 @@ export default function useContract() {
     return events[0].args.contractId;
   }
 
+  const listenForContractEvents = () => {
+    employerContract.on("ContractStatusUpdated", (contractId, status) => {
+      console.log(`Contract ID: ${contractId}, New Status: ${status}`);
+      setContractId(Number(contractId));
+      setContractStatus(Number(status));
+    });
+
+    return () => {
+      employerContract.removeAllListeners("ContractStatusUpdated");
+    };
+  };
+
   async function getContractContent(contractId: number): Promise<string> {
     return employerContract.getContractContent(contractId);
   }
@@ -43,9 +58,22 @@ export default function useContract() {
     return result;
   }
 
+  async function generateAttestation(contractId: number): Promise<bigint> {
+    const attestId = await employerContract.extractTextFromGeneratedContract(
+      contractId
+    );
+    console.log("attestId", attestId);
+    return attestId;
+  }
+  async function getAttestation(contractId: number): Promise<string> {
+    return employerContract.getExtractedText(contractId);
+  }
   return {
     create,
     getContractContent,
     getAllContracts,
+    generateAttestation,
+    getAttestation,
+    listenForContractEvents,
   };
 }

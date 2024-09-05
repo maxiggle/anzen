@@ -15,7 +15,7 @@ export default function CreateContract() {
   async function handleReviewContractAndReturnContent(): Promise<void> {
     setIsReviewing(true);
     const contractId = await reviewContract(
-      "6",
+      "1",
       "You are an expert AI lawyer hired by the employee to review their employment contract. Your task is to go through the contract line by line, explaining each clause in detail so that the employee can fully understand the terms and conditions. As you review the contract, identify and highlight any potential issues or clauses that could be unfavorable to the employee. Offer clear, unbiased advice on what each part means and how it might impact the employee's rights and obligations. Any other comments, reasoning, or dialogue that does not relate to explaining the contract should not be included."
     );
     console.log("contractId", contractId);
