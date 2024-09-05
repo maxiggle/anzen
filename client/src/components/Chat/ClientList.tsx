@@ -67,7 +67,6 @@ export default function ClientList() {
         }
       } catch (error) {
         alert(error);
-        console.log("error :>> ", error);
       } finally {
         setIsLoading(false);
       }
@@ -88,7 +87,7 @@ export default function ClientList() {
       </h3>
 
       {isLoading && <div>Loading...</div>}
-      {isOnNetwork && <>Network is life</>}
+      {isOnNetwork && <div>Network is life</div>}
 
       <div className="p-4 border-b border-gray-200">
         <div className="relative flex">
@@ -143,20 +142,6 @@ export default function ClientList() {
           ))}
         </ul>
       )}
-
-      {/* <ul className="divide-y divide-gray-200">
-        {["Client 1", "Client 2", "Client 3"].map((client, index) => (
-          <li
-            key={index}
-            className="p-4 hover:bg-gray-200 cursor-pointer transition duration-150 ease-in-out flex items-center"
-          >
-            <div className="w-8 h-8 bg-blue-500 rounded-full mr-3 flex items-center justify-center text-white font-semibold border border-blue-600">
-              {client.charAt(0)}
-            </div>
-            <span>{client}</span>
-          </li>
-        ))}
-      </ul> */}
     </div>
   );
 }
