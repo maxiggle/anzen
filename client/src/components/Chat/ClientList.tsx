@@ -4,7 +4,7 @@ import {
   useCanMessage,
   useConversations,
 } from "@xmtp/react-sdk";
-import React, { FormEvent, useCallback, useEffect, useState } from "react";
+import React, { FormEvent, useCallback, useState } from "react";
 import useChatStore from "../../store/useChatStore";
 
 type ChangeEvent = React.ChangeEvent<HTMLInputElement> | undefined;

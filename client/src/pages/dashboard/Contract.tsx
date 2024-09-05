@@ -24,6 +24,7 @@ export default function Contract() {
     async function loadContracts() {
       try {
         const fetchedContracts = await getAllContracts();
+        console.log("Fetched contracts:", fetchedContracts);
         setContracts(fetchedContracts);
       } catch (error) {
         console.error("Failed to fetch contracts:", error);
@@ -37,10 +38,6 @@ export default function Contract() {
 
   if (loading) {
     return <div>Loading...</div>;
-  }
-
-  if (!contracts) {
-    return <div>No contracts found.</div>;
   }
 
   const headers = [

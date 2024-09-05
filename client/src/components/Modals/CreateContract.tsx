@@ -1,31 +1,59 @@
 import useContract from "../../hooks/useContract";
 import Button from "../UI/Button";
 import config from "../../utils/config";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
+import useEventStore from "../../store/useEventStore";
 
 export default function CreateContract() {
-  const { create, getContractContent } = useContract();
+  const { create, getContractContent, listenForContractEvents } = useContract();
+  const contractId = useEventStore((state) => state.contractId);
+  const contractStatus = useEventStore((state) => state.contractStatus);
 
   const [contractContent, setContractContent] = useState("");
   const [contractTerms, setContractTerms] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isNewContractRequested, setIsNewContractRequested] = useState(false);
   const printTarget = useRef<HTMLDivElement>(null);
 
-  // Function to handle creating a contract and fetching content
-  async function handleCreateContractAndReturnContent(): Promise<void> {
+  const handleCreateContractAndReturnContent = useCallback(async () => {
     setIsGenerating(true);
-    const contractId = await create(config.employeeAddress, contractTerms);
-    if (contractId) {
-      console.log("Contract created with ID:", contractId);
-    } else {
-      console.error("Failed to create contract.", status);
+    setIsNewContractRequested(true);
+    setContractContent(""); // Clear existing content
+    const newContractId = await create(config.employeeAddress, contractTerms);
+    console.log("New contract created with ID:", newContractId.toString());
+  }, [create, contractTerms]);
+
+  useEffect(() => {
+    const cleanup = listenForContractEvents();
+    return cleanup;
+  }, [listenForContractEvents]);
+
+  useEffect(() => {
+    async function fetchContractContent() {
+      if (
+        contractId !== null &&
+        contractStatus === 1 &&
+        isNewContractRequested
+      ) {
+        try {
+          const content = await getContractContent(contractId);
+          setContractContent(content);
+        } catch (error) {
+          console.error("Error fetching contract content:", error);
+          setContractContent(
+            "Error fetching contract content. Please try again."
+          );
+        } finally {
+          setIsGenerating(false);
+          setIsNewContractRequested(false);
+        }
+      }
     }
-    const content = await getContractContent(+contractId.toString() - 1);
-    setContractContent(content);
-    setIsGenerating(false);
-  }
+
+    fetchContractContent();
+  }, [contractId, contractStatus, getContractContent, isNewContractRequested]);
 
   useEffect(() => {
     if (isPrinting) {

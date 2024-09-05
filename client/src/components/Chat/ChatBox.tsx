@@ -5,7 +5,7 @@ import EmojiSelect from "../UI/EmojiSelect";
 import Bubble from "./Bubble";
 import {
   // DecodedMessage,
-  isValidAddress,
+  // isValidAddress,
   useMessages,
   useSendMessage,
   useStartConversation,
