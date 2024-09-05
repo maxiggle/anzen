@@ -2,17 +2,17 @@
 import { ChangeEvent, useCallback, useState } from "react";
 import Button from "../UI/Button";
 import EmojiSelect from "../UI/EmojiSelect";
-import {
-  useSendMessage,
-  useStartConversation,
-} from "@xmtp/react-sdk";
+import { useSendMessage, useStartConversation } from "@xmtp/react-sdk";
 import useChatStore from "../../store/useChatStore";
 import Messages from "./Messages";
 
-export default function ChatBox({ userAddress: ua }: any) {
+interface IProps {
+  userAddress: string;
+}
+
+export default function ChatBox({ userAddress }: IProps) {
   const newAddress = useChatStore((state) => state.newAddress);
   const conversation = useChatStore((state) => state.conversation);
-  const userAddress = useChatStore((state) => state.userAddress);
 
   const { startConversation } = useStartConversation();
   const { sendMessage } = useSendMessage();
@@ -33,8 +33,6 @@ export default function ChatBox({ userAddress: ua }: any) {
     [userAddress, startConversation]
   );
 
-  
-
   const handleMessageChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       setMessage(e.target.value);
@@ -52,11 +50,11 @@ export default function ChatBox({ userAddress: ua }: any) {
         setIsSending(false);
       }
     },
-    [message, userAddress, sendMessage]
+    [conversation, message]
   );
 
   return (
-    <div className="w-3/4 flex bg-white border rounded-lg flex-col">
+    <div className="w-full flex bg-white relative  border rounded-lg flex-col">
       <div className="flex-grow p-8 w-full  max-h-[80vh] overflow-y-auto">
         {newAddress && (
           <div className="flex flex-col items-center justify-center h-full">
@@ -70,17 +68,18 @@ export default function ChatBox({ userAddress: ua }: any) {
         )}
 
         {conversation && (
-          <div className="flex flex-col items-center justify-center h-full">
-            <h1 className="text-lg font-bold mb-4">
-              You are now chatting with {conversation.peerAddress}
-            </h1>
-            <p className="text-gray-600 mb-4">
-              Start a conversation by typing a message below. ---
-            </p>
+          <div className="flex flex-col px-5 py-3 items-center absolute z-10 w-full left-0 bg-white top-0 self-start justify-center">
+            <p>You are now chatting with</p>
+            <h1 className="text-lg font-bold">{conversation.peerAddress}</h1>
           </div>
         )}
 
-        { conversation && <Messages currentUserAddress={ua} conversation={conversation} />}
+        {conversation && (
+          <Messages
+            currentUserAddress={userAddress}
+            conversation={conversation}
+          />
+        )}
       </div>
 
       <div className="p-4 border-t">

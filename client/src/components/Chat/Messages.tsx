@@ -1,11 +1,15 @@
-import { CachedConversation, DecodedMessage, useMessages } from '@xmtp/react-sdk';
-import  { useCallback } from 'react'
-import Bubble from './Bubble';
+import {
+  CachedConversation,
+  DecodedMessage,
+  useMessages,
+} from "@xmtp/react-sdk";
+import { useCallback } from "react";
+import Bubble from "./Bubble";
 
 type IProps = {
   conversation: CachedConversation;
   currentUserAddress: string;
-}
+};
 
 export default function Messages({ conversation, currentUserAddress }: IProps) {
   const { error, messages, isLoading } = useMessages(conversation, {
@@ -24,19 +28,20 @@ export default function Messages({ conversation, currentUserAddress }: IProps) {
   if (isLoading) {
     return "Loading messages...";
   }
-  
-  return <>
-  {messages.map((e, i) => (
+
+  return (
     <>
-      {e.senderAddress === currentUserAddress ? "true" : "false"}
-      <Bubble
-        key={i}
-        isUser={e.senderAddress === currentUserAddress}
-        time={e.sentAt.toLocaleString()}
-        message={e.content}
-        status={e.status}
-      />
+      {messages.map((e, i) => (
+        <>
+          <Bubble
+            key={i}
+            isUser={e.senderAddress === currentUserAddress}
+            time={e.sentAt.toLocaleString()}
+            message={e.content}
+            status={e.status}
+          />
+        </>
+      ))}
     </>
-  ))}
-  </>
+  );
 }

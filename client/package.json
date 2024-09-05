@@ -39,15 +39,11 @@
     "react-dom": "^18.3.1",
     "react-icons": "^5.3.0",
     "react-markdown": "^9.0.1",
-<<<<<<< HEAD
-    "react-router-dom": "^6.26.1",
-    "zustand": "^4.5.5"
-=======
+    "zustand": "^4.5.5",
     "react-number-format": "^5.4.1",
     "react-router-dom": "^6.26.1",
     "styled-components": "^6.1.13",
     "viem": "^2.21.1"
->>>>>>> e9ee5429172fd8f87a6d7f14b75ea5f69eb66a6a
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
