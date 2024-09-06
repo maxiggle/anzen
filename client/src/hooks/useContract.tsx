@@ -79,10 +79,15 @@ export default function useContract() {
   }
 
   async function generateAttestation(contractId: bigint): Promise<bigint> {
-    const attestId = await employerContract.extractTextFromGeneratedContract(
-      contractId
+    const transactionResponse =
+      await employerContract.extractTextFromGeneratedContract(contractId);
+
+    const receipt = await transactionResponse.wait();
+    const events = receipt.events?.filter(
+      (event: ethers.Log) => event.address === "TextExtracted"
     );
-    console.log("attestId", attestId);
+    const attestId = events[0].args.attestId;
+    console.log("Attest ID:", attestId);
     return attestId;
   }
   async function getAttestation(contractId: number): Promise<string> {
