@@ -10,6 +10,14 @@ export default function useStartExtConversation() {
     if (!(await client.canMessage(address))) {
       alert("conversation request cannot be sent");
     }
+
+    for (const conversation of await client.conversations.list()) {
+      if (conversation.peerAddress === address) {
+        await conversation.send(message);
+        return;
+      }
+    }
+
     const conversation = await client.conversations.newConversation(address);
     await conversation.send(message);
   };
