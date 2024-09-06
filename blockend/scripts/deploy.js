@@ -1,7 +1,7 @@
 
 const { ethers } = require("hardhat");
 
-const oracleAddress = "0x68EC9556830AD097D661Df2557FBCeC166a0A075";
+const oracleAddress = "0x0352b37E5680E324E804B5A6e1AddF0A064E201D";
 
 async function main() {
 

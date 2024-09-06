@@ -451,16 +451,9 @@ const employeeAbi = [
   },
 ];
 
-<<<<<<< HEAD
-const PRIVATE_KEY =
-  "0x846b0dde34ff50df842f5ff639bb61b05406b9f45d8fdb816b5acda3b2618174";
-const contractAddress = "0x09a5733DF8951C9f78f91ce9a38E9Fe0e36b8b1c";
-const RPC_URL = "https://devnet.galadriel.com/";
-=======
 const PRIVATE_KEY = process.env.PRIVATE_KEY_GALADRIEL;
 const contractAddress = "0x4cCf3897F978d58074cFb7C212c13Fc3e460B641";
 const RPC_URL = "https://devnet.galadriel.com/"
->>>>>>> 92ca87a3fe453898eb128675a4e8d788ce063271
 const provider = new ethers.JsonRpcProvider(RPC_URL);
 const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
 const employeeAddress = "0xb8FCeb74C6c7e9DEaAcE41060747670d43475997";

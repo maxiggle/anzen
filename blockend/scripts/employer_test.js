@@ -533,7 +533,7 @@ const employerAbi = [
 ];
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY_GALADRIEL;
-const contractAddress = "0x1D269C99a59056532d38E001a55a0D4f4B016207";
+const contractAddress = "0x55effBB4FC02361633266633a2F079a731Bd6bE1";
 const RPC_URL = "https://devnet.galadriel.com/"
 const provider = new ethers.JsonRpcProvider(RPC_URL);
 const wallet = new ethers.Wallet(PRIVATE_KEY, provider); 
