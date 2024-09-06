@@ -1,18 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  CachedConversation,
   isValidAddress,
   useCanMessage,
   useConversations,
 } from "@xmtp/react-sdk";
 import React, { FormEvent, useCallback, useState } from "react";
-import useChatStore from "../../store/useChatStore";
 import useStreamedConversation from "../../hooks/useStreamedConversation";
 
 type ChangeEvent = React.ChangeEvent<HTMLInputElement> | undefined;
 
-export default function ClientList() {
-  const setNewAddress = useChatStore((state) => state.setNewAddress);
-  const setConversation = useChatStore((state) => state.setConversation);
+interface IProps {
+  setConversation: (conversation: CachedConversation) => void;
+  setNewAddress: (address: string) => void;
+}
+
+export default function ClientList({ setConversation, setNewAddress }: IProps) {
   const [showButton, setShowButton] = useState(false);
   const [peerAddress, setPeerAddress] = useState("");
   const [isOnNetwork, setIsOnNetwork] = useState(false);
@@ -51,6 +54,7 @@ export default function ClientList() {
           );
           if (!conversation) {
             setNewAddress(peerAddress);
+            console.log({ new: peerAddress });
           } else {
             setConversation(conversation);
           }
@@ -77,7 +81,7 @@ export default function ClientList() {
     },
     [peerAddress, canMessage]
   );
-  if (loadingConversations)
+  if (loadingConversations) {
     return (
       <div className="flex items-center justify-center h-full max-h-[300px] bg-white p-4">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -102,6 +106,7 @@ export default function ClientList() {
         </span>
       </div>
     );
+  }
 
   if (error) {
     return <div>Error: {error.message}</div>;
