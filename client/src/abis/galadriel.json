@@ -213,7 +213,7 @@
     "outputs": [
       {
         "internalType": "uint256[]",
-        "name": "",
+        "name": "contractIds",
         "type": "uint256[]"
       },
       {
@@ -289,17 +289,17 @@
           }
         ],
         "internalType": "struct EmployerContract.EmployerContractStruct[]",
-        "name": "",
+        "name": "contracts",
         "type": "tuple[]"
       },
       {
         "internalType": "bool[]",
-        "name": "",
+        "name": "statuses",
         "type": "bool[]"
       },
       {
         "internalType": "uint256[]",
-        "name": "",
+        "name": "createdTimes",
         "type": "uint256[]"
       }
     ],

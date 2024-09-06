@@ -19,6 +19,7 @@ export default function CreateContract() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const [contractId, setContractId] = useState(0);
+  const attestationJson = useAttestationStore((state) => state.attestationJson);
   const setAttestationJson = useAttestationStore(
     (state) => state.setAttestationJson
   );
