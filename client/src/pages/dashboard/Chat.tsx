@@ -11,11 +11,34 @@ export default function Chat() {
   const { handleConnect } = useInitChat();
 
   if (error) {
-    return "An error occurred while initializing the client";
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+        <div className="bg-white p-8 rounded-lg shadow-md">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
+          <p className="text-gray-700 mb-6">
+            An error occurred while initializing the client. Please try again
+            later.
+          </p>
+          <Button onClick={() => window.location.reload()} className="w-full">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   if (isLoading) {
-    return "Awaiting signatures...";
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <h2 className="text-2xl font-semibold text-gray-800">
+            Initializing Chat
+          </h2>
+          <p className="text-gray-600 mt-2">Awaiting signatures...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -23,13 +46,15 @@ export default function Chat() {
       <div className="flex flex-row mb-6 justify-between items-center">
         <h2 className="text-lg font-semibold">Chats</h2>
         <div>
-          <Button
-            loading={false}
-            onClick={() => handleConnect()}
-            variant="primary"
-          >
-            Connect Chat
-          </Button>
+          {!client && (
+            <Button
+              loading={false}
+              onClick={() => handleConnect()}
+              variant="primary"
+            >
+              Connect Chat
+            </Button>
+          )}
         </div>
       </div>
 
