@@ -17,6 +17,8 @@ export default function ClientList() {
   const [isOnNetwork, setIsOnNetwork] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [innerMessage, setInnerMessage] = useState("");
+
   const { canMessage } = useCanMessage();
 
   const {
@@ -49,11 +51,14 @@ export default function ClientList() {
     async (e: FormEvent) => {
       try {
         e.preventDefault();
+        setInnerMessage("");
         if (isValidAddress(peerAddress)) {
           setIsLoading(true);
           if (await canMessage(peerAddress)) {
             checkAddressForExistingConversation(peerAddress);
             setIsOnNetwork(true);
+          } else {
+            setInnerMessage("Address not on network");
           }
           setIsLoading(false);
         } else {
@@ -117,6 +122,12 @@ export default function ClientList() {
           )}
         </div>
       </div>
+
+      {innerMessage && (
+        <div className="p-4 border-b border-gray-200">
+          <div className="text-red-500">{innerMessage}</div>
+        </div>
+      )}
 
       {loadingConversations ? (
         <div>Loading...</div>

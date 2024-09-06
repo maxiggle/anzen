@@ -32,15 +32,13 @@ export default function Messages({ conversation, currentUserAddress }: IProps) {
   return (
     <>
       {messages.map((e, i) => (
-        <>
-          <Bubble
-            key={i}
-            isUser={e.senderAddress === currentUserAddress}
-            time={e.sentAt.toLocaleString()}
-            message={e.content}
-            status={e.status}
-          />
-        </>
+        <Bubble
+          key={i}
+          isUser={e.senderAddress === currentUserAddress}
+          time={e.sentAt.toLocaleString()}
+          message={e.content}
+          status={e.status}
+        />
       ))}
     </>
   );
