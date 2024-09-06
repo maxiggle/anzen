@@ -1,12 +1,17 @@
 import ClientList from "../../components/Chat/ClientList";
 import Button from "../../components/UI/Button";
-import { useClient } from "@xmtp/react-sdk";
+import { CachedConversation, Conversation, useClient } from "@xmtp/react-sdk";
 import ChatBox from "../../components/Chat/ChatBox";
 import useChatStore from "../../store/useChatStore";
 import useInitChat from "../../hooks/useInitChat";
+import { useState } from "react";
 
 export default function Chat() {
   const myAddress = useChatStore((state) => state.myAddress);
+  const [newAddress, setNewAddress] = useState("");
+  const [currentConversation, setCurrentConversation] = useState<
+    CachedConversation | Conversation | null
+  >(null);
   const { client, error, isLoading } = useClient();
   const { handleConnect } = useInitChat();
 
@@ -61,10 +66,18 @@ export default function Chat() {
       {client && myAddress ? (
         <div className="flex flex-row w-full gap-5 h-[calc(100vh-200px)]">
           <div className="w-2/3">
-            <ChatBox userAddress={myAddress} />
+            <ChatBox
+              userAddress={myAddress}
+              newAddress={newAddress}
+              conversation={currentConversation}
+              setConversation={(c) => setCurrentConversation(() => c)}
+            />
           </div>
           <div className="w-1/3">
-            <ClientList />
+            <ClientList
+              setConversation={(c) => setCurrentConversation(() => c)}
+              setNewAddress={(a) => setNewAddress(() => a)}
+            />
           </div>
         </div>
       ) : (

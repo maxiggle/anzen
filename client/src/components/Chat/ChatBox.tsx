@@ -3,42 +3,62 @@ import { ChangeEvent, useCallback, useState } from "react";
 import Button from "../UI/Button";
 import EmojiSelect from "../UI/EmojiSelect";
 
-import { useSendMessage, useStartConversation } from "@xmtp/react-sdk";
-import useChatStore from "../../store/useChatStore";
+import {
+  CachedConversation,
+  Conversation,
+  useSendMessage,
+} from "@xmtp/react-sdk";
 import Messages from "./Messages";
+import useStartExtConversation from "../../hooks/useStartExtConversation";
 
 interface IProps {
   userAddress: string;
+  newAddress?: string;
+  conversation: CachedConversation | Conversation | any | null;
+  setConversation: (c: CachedConversation | Conversation) => void;
 }
 
-export default function ChatBox({ userAddress }: IProps) {
-  const newAddress = useChatStore((state) => state.newAddress);
-  const conversation = useChatStore((state) => state.conversation);
-  const setConversation = useChatStore((state) => state.setConversation);
-
-  const { startConversation } = useStartConversation();
+export default function ChatBox({
+  userAddress,
+  newAddress,
+  conversation,
+  setConversation,
+}: IProps) {
   const { sendMessage } = useSendMessage();
 
   const [isSending, setIsSending] = useState(false);
   const [message, setMessage] = useState("");
 
+  const { startConversation } = useStartExtConversation();
+
   const handleStartConversation = useCallback(
     async (e: React.FormEvent) => {
-      e.preventDefault();
+      try {
+        e.preventDefault();
 
-      if (newAddress && message) {
-        setIsSending(true);
-        const { cachedConversation } = await startConversation(
-          newAddress,
-          message
-        );
-        if (cachedConversation) {
-          setConversation(cachedConversation);
+        console.log({ newAddress, message });
+
+        if (newAddress && message) {
+          setIsSending(true);
+          const res = await startConversation(newAddress, message);
+
+          if (res && res.conversation) {
+            console.log(res);
+
+            setConversation(res.conversation);
+            res.conversation.send("Connected");
+          }
+
+          setIsSending(false);
         }
+      } catch (error) {
+        console.log({ error });
+        handleSendMessage({ preventDefault() {} } as any);
+      } finally {
         setIsSending(false);
       }
     },
-    [userAddress, startConversation]
+    [userAddress, newAddress, message]
   );
 
   const handleMessageChange = useCallback(
@@ -66,8 +86,8 @@ export default function ChatBox({ userAddress }: IProps) {
     <div className="w-full flex bg-white relative  max-h-[80vh] h-full border rounded-lg flex-col">
       <div className="flex-grow p-8 w-full  h-full overflow-y-auto">
         {newAddress && (
-          <div className="flex flex-col absolute items-center justify-center h-full">
-            <h1 className="text-2xl font-bold mb-4">
+          <div className="flex flex-col absolute px-5 z-10 left-0 top-0 py-2 right-0 bg-slate-200 self-start items-center justify-center">
+            <h1 className="text-xl font-bold mb-4">
               You are now chatting with {newAddress}
             </h1>
             <p className="text-gray-600 mb-4">
@@ -98,14 +118,14 @@ export default function ChatBox({ userAddress }: IProps) {
         </div>
       </div>
 
-      {isSending ? (
+      {isSending && (
         <div className="flex items-center justify-center space-x-2">
           <span>Sending</span>
           <span className="animate-bounce">.</span>
           <span className="animate-bounce animation-delay-200">.</span>
           <span className="animate-bounce animation-delay-400">.</span>
         </div>
-      ) : null}
+      )}
 
       <div className="p-4 border-t">
         <div className="flex items-center">
