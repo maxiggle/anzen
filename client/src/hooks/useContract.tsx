@@ -78,16 +78,24 @@ export default function useContract() {
     }
   }
 
-  async function generateAttestation(contractId: bigint): Promise<bigint> {
+  async function generateAttestation(contractId: bigint): Promise<number> {
     const transactionResponse =
       await employerContract.extractTextFromGeneratedContract(contractId);
 
     const receipt = await transactionResponse.wait();
-    const events = receipt.events?.filter(
-      (event: ethers.Log) => event.address === "TextExtracted"
-    );
-    const attestId = events[0].args.attestId;
-    console.log("Attest ID:", attestId);
+    const events = receipt.logs
+      .map((log: ethers.Log) => {
+        try {
+          return employerContract.interface.parseLog(log);
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_) {
+          return null;
+        }
+      })
+      .filter((event: ethers.Log | null) => event !== null);
+
+    const attestId = Number(events[0].args[1]);
+    console.log("review ID:", attestId);
     return attestId;
   }
   async function getAttestation(contractId: number): Promise<string> {

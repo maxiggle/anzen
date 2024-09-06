@@ -3,6 +3,7 @@ import Button from "../UI/Button";
 import config from "../../utils/config";
 import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
+import attestationService from "../../pages/dashboard/attestationJsonService";
 // import useEventStore from "../../store/useEventStore";
 
 export default function CreateContract() {
@@ -33,6 +34,20 @@ export default function CreateContract() {
     setContractContent(content);
     setIsGenerating(false);
     setContractId(result.contractId);
+  }
+
+  async function sendAttestation(attestationJson: string) {
+    try {
+      if (!attestationJson) {
+        throw new Error("Attestation JSON is not set");
+      }
+      const attestation = await attestationService.createAttestation(
+        JSON.stringify(attestationJson)
+      );
+      console.log("Attestation created:", attestation.attestationId);
+    } catch (error) {
+      console.error("Failed to create attestation:", error);
+    }
   }
 
   useEffect(() => {
@@ -111,16 +126,16 @@ export default function CreateContract() {
                 await generateAttestation(BigInt(contractId)).then(
                   async (id) => {
                     console.log("Attestation ID:", id);
-                    // console.log("Attestation ID:", id);
-                    // await new Promise((resolve) => setTimeout(resolve, 30000));
-                    // const json = await getAttestation(BigInt(13));
-                    // console.log("Azaaaaaaaaaaa", json);
-                    // setJsonContent(json);
+                    await new Promise((resolve) => setTimeout(resolve, 30000));
+                    await getAttestation(id).then((json) => {
+                      console.log("Attestation JSON:", json);
+                      sendAttestation(json);
+                    });
                   }
                 );
               }}
             >
-              Sign Contract
+              Generate Attestation
             </Button>
             <Button
               variant="outline"
