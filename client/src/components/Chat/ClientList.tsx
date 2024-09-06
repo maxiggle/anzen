@@ -6,6 +6,7 @@ import {
 } from "@xmtp/react-sdk";
 import React, { FormEvent, useCallback, useState } from "react";
 import useChatStore from "../../store/useChatStore";
+import useStreamedConversation from "../../hooks/useStreamedConversation";
 
 type ChangeEvent = React.ChangeEvent<HTMLInputElement> | undefined;
 
@@ -17,7 +18,10 @@ export default function ClientList() {
   const [isOnNetwork, setIsOnNetwork] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [innerMessage, setInnerMessage] = useState("");
+
   const { canMessage } = useCanMessage();
+  const { conversations: streamedConversation } = useStreamedConversation();
 
   const {
     error,
@@ -29,35 +33,41 @@ export default function ClientList() {
     setPeerAddress(e!.target.value);
   }, []);
 
-  const checkAddressForExistingConversation = (address: string) => {
-    if (conversations && conversations.length === 0) {
-      setNewAddress(peerAddress);
-      return;
-    }
-
-    if (conversations && conversations.length > 0) {
-      const conversation = conversations.find((c) => c.peerAddress === address);
-      if (!conversation) {
-        setNewAddress(peerAddress);
-      } else {
-        setConversation(conversation);
-      }
-    }
-  };
-
   const handleCheckAddress = useCallback(
     async (e: FormEvent) => {
-      try {
-        e.preventDefault();
-        if (isValidAddress(peerAddress)) {
-          setIsLoading(true);
-          if (await canMessage(peerAddress)) {
-            checkAddressForExistingConversation(peerAddress);
-            setIsOnNetwork(true);
+      e.preventDefault();
+      setInnerMessage("");
+      setIsLoading(true);
+
+      const checkAddressForExistingConversation = (address: string) => {
+        if (conversations && conversations.length === 0) {
+          setNewAddress(peerAddress);
+          return;
+        }
+
+        if (conversations && conversations.length > 0) {
+          const conversation = conversations.find(
+            (c) => c.peerAddress === address
+          );
+          if (!conversation) {
+            setNewAddress(peerAddress);
+          } else {
+            setConversation(conversation);
           }
-          setIsLoading(false);
-        } else {
+        }
+      };
+
+      try {
+        if (!isValidAddress(peerAddress)) {
           setIsOnNetwork(false);
+          return;
+        }
+
+        if (await canMessage(peerAddress)) {
+          checkAddressForExistingConversation(peerAddress);
+          setIsOnNetwork(true);
+        } else {
+          setInnerMessage("Address not on network");
         }
       } catch (error) {
         alert(error);
@@ -65,10 +75,33 @@ export default function ClientList() {
         setIsLoading(false);
       }
     },
-    [peerAddress]
+    [peerAddress, canMessage]
   );
-
-  if (loadingConversations) return <div>Loading...</div>;
+  if (loadingConversations)
+    return (
+      <div className="flex items-center justify-center h-full max-h-[300px] bg-white p-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <svg
+          className="animate-pulse ml-3"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 6V8M12 12V14M12 18V20M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"
+            stroke="#4B5563"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="ml-2 text-gray-600 font-medium">
+          Loading conversations...
+        </span>
+      </div>
+    );
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -80,8 +113,50 @@ export default function ClientList() {
         Clients
       </h3>
 
-      {isLoading && <div>Loading...</div>}
-      {isOnNetwork && <div>Network is life</div>}
+      {isLoading && (
+        <div className="flex items-center justify-center p-4">
+          <svg
+            className="animate-spin h-5 w-5 text-gray-500"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          <span className="ml-2 text-gray-600">Loading...</span>
+        </div>
+      )}
+      {isOnNetwork && (
+        <div className="flex items-center justify-center p-4 bg-green-100 text-green-700 rounded-md">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          <span className="font-semibold">Network is active</span>
+        </div>
+      )}
 
       <div className="p-4 border-b border-gray-200">
         <div className="relative flex">
@@ -118,24 +193,37 @@ export default function ClientList() {
         </div>
       </div>
 
+      {innerMessage && (
+        <div className="p-4 border-b border-gray-200">
+          <div className="text-red-500">{innerMessage}</div>
+        </div>
+      )}
+
       {loadingConversations ? (
         <div>Loading...</div>
       ) : (
         <ul className="divide-y divide-gray-200">
-          {conversations.map((e, i) => (
+          {[...streamedConversation].map((e, i) => (
             <li
               key={i}
-              onClick={() => setConversation(e)}
-              className="p-4 hover:bg-gray-200 cursor-pointer transition duration-150 ease-in-out flex items-center"
+              onClick={() => setConversation(e as any)}
+              className="p-4 hover:bg-gray-200 cursor-pointer transition gap-3 duration-150 ease-in-out flex items-center"
             >
               <div>
-                <div className="w-8 h-8 bg-blue-500 rounded-full mr-3 flex items-center justify-center text-white font-semibold border border-blue-600">
+                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold border border-blue-600">
                   {e.peerAddress.charAt(0)}x{e.peerAddress.charAt(2)}
                 </div>
               </div>
-              <span className=" flex w-full overflow-hidden">
+              <span className=" flex w-full text-xs break-all">
                 {e.peerAddress}
               </span>
+              {!conversations.find((c) => c.peerAddress === e.peerAddress) && (
+                <div className="flex items-center">
+                  <span className="bg-green-600 w-4 h-4 flex rounded-full">
+                    &nbsp;
+                  </span>
+                </div>
+              )}
             </li>
           ))}
         </ul>

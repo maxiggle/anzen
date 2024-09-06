@@ -3,10 +3,7 @@ import { ChangeEvent, useCallback, useState } from "react";
 import Button from "../UI/Button";
 import EmojiSelect from "../UI/EmojiSelect";
 
-import {
-  useSendMessage,
-  useStartConversation,
-} from "@xmtp/react-sdk";
+import { useSendMessage, useStartConversation } from "@xmtp/react-sdk";
 import useChatStore from "../../store/useChatStore";
 import Messages from "./Messages";
 
@@ -17,6 +14,7 @@ interface IProps {
 export default function ChatBox({ userAddress }: IProps) {
   const newAddress = useChatStore((state) => state.newAddress);
   const conversation = useChatStore((state) => state.conversation);
+  const setConversation = useChatStore((state) => state.setConversation);
 
   const { startConversation } = useStartConversation();
   const { sendMessage } = useSendMessage();
@@ -30,7 +28,13 @@ export default function ChatBox({ userAddress }: IProps) {
 
       if (newAddress && message) {
         setIsSending(true);
-        await startConversation(newAddress, message);
+        const { cachedConversation } = await startConversation(
+          newAddress,
+          message
+        );
+        if (cachedConversation) {
+          setConversation(cachedConversation);
+        }
         setIsSending(false);
       }
     },
@@ -52,16 +56,17 @@ export default function ChatBox({ userAddress }: IProps) {
         setIsSending(true);
         await sendMessage(conversation, message);
         setIsSending(false);
+        setMessage("");
       }
     },
     [conversation, message]
   );
 
   return (
-    <div className="w-full flex bg-white relative  border rounded-lg flex-col">
-      <div className="flex-grow p-8 w-full  max-h-[80vh] overflow-y-auto">
+    <div className="w-full flex bg-white relative  max-h-[80vh] h-full border rounded-lg flex-col">
+      <div className="flex-grow p-8 w-full  h-full overflow-y-auto">
         {newAddress && (
-          <div className="flex flex-col items-center justify-center h-full">
+          <div className="flex flex-col absolute items-center justify-center h-full">
             <h1 className="text-2xl font-bold mb-4">
               You are now chatting with {newAddress}
             </h1>
@@ -74,17 +79,33 @@ export default function ChatBox({ userAddress }: IProps) {
         {conversation && (
           <div className="flex flex-col px-5 py-3 items-center absolute z-10 w-full left-0 bg-white top-0 self-start justify-center">
             <p>You are now chatting with</p>
-            <h1 className="text-lg font-bold">{conversation.peerAddress}</h1>
+            <h1 className="text-lg font-bold">
+              {conversation.peerAddress.substring(0, 6)}...
+              {conversation.peerAddress.substring(
+                conversation.peerAddress.length - 4
+              )}
+            </h1>
           </div>
         )}
 
-        {conversation && (
-          <Messages
-            currentUserAddress={userAddress}
-            conversation={conversation}
-          />
-        )}
+        <div className="mt-20">
+          {conversation && (
+            <Messages
+              currentUserAddress={userAddress}
+              conversation={conversation}
+            />
+          )}
+        </div>
       </div>
+
+      {isSending ? (
+        <div className="flex items-center justify-center space-x-2">
+          <span>Sending</span>
+          <span className="animate-bounce">.</span>
+          <span className="animate-bounce animation-delay-200">.</span>
+          <span className="animate-bounce animation-delay-400">.</span>
+        </div>
+      ) : null}
 
       <div className="p-4 border-t">
         <div className="flex items-center">
@@ -104,7 +125,7 @@ export default function ChatBox({ userAddress }: IProps) {
               />
             </svg>
           </button>
-          {isSending ? <>Sending...</> : null}
+
           <div className="mr-2 mt-1 text-gray-500 hover:text-gray-700">
             <EmojiSelect
               onEmojiSelect={(e) => {

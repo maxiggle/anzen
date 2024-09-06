@@ -37,12 +37,12 @@ export const buildLocalStorageKey = (walletAddress: string) => {
   return walletAddress ? `xmtp:${getEnv()}:keys:${walletAddress}` : "";
 };
 
-export const loadKeys = (walletAddress: string) => {
-  const val = localStorage.getItem(buildLocalStorageKey(walletAddress));
+export const loadKeys = (address: string): Uint8Array | null => {
+  const val = localStorage.getItem(buildLocalStorageKey(address));
   return val ? Buffer.from(val, ENCODING) : null;
 };
 
-export const storeKeys = (walletAddress: string, keys: Buffer): void => {
+export const storeKeys = (walletAddress: string, keys: Uint8Array): void => {
   localStorage.setItem(
     buildLocalStorageKey(walletAddress),
     Buffer.from(keys).toString(ENCODING)
