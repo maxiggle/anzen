@@ -6,6 +6,7 @@ import {
 } from "@xmtp/react-sdk";
 import React, { FormEvent, useCallback, useState } from "react";
 import useChatStore from "../../store/useChatStore";
+import useStreamedConversation from "../../hooks/useStreamedConversation";
 
 type ChangeEvent = React.ChangeEvent<HTMLInputElement> | undefined;
 
@@ -20,6 +21,7 @@ export default function ClientList() {
   const [innerMessage, setInnerMessage] = useState("");
 
   const { canMessage } = useCanMessage();
+  const { conversations: streamedConversation } = useStreamedConversation();
 
   const {
     error,
@@ -31,38 +33,41 @@ export default function ClientList() {
     setPeerAddress(e!.target.value);
   }, []);
 
-  const checkAddressForExistingConversation = (address: string) => {
-    if (conversations && conversations.length === 0) {
-      setNewAddress(peerAddress);
-      return;
-    }
-
-    if (conversations && conversations.length > 0) {
-      const conversation = conversations.find((c) => c.peerAddress === address);
-      if (!conversation) {
-        setNewAddress(peerAddress);
-      } else {
-        setConversation(conversation);
-      }
-    }
-  };
-
   const handleCheckAddress = useCallback(
     async (e: FormEvent) => {
-      try {
-        e.preventDefault();
-        setInnerMessage("");
-        if (isValidAddress(peerAddress)) {
-          setIsLoading(true);
-          if (await canMessage(peerAddress)) {
-            checkAddressForExistingConversation(peerAddress);
-            setIsOnNetwork(true);
+      e.preventDefault();
+      setInnerMessage("");
+      setIsLoading(true);
+
+      const checkAddressForExistingConversation = (address: string) => {
+        if (conversations && conversations.length === 0) {
+          setNewAddress(peerAddress);
+          return;
+        }
+
+        if (conversations && conversations.length > 0) {
+          const conversation = conversations.find(
+            (c) => c.peerAddress === address
+          );
+          if (!conversation) {
+            setNewAddress(peerAddress);
           } else {
-            setInnerMessage("Address not on network");
+            setConversation(conversation);
           }
-          setIsLoading(false);
-        } else {
+        }
+      };
+
+      try {
+        if (!isValidAddress(peerAddress)) {
           setIsOnNetwork(false);
+          return;
+        }
+
+        if (await canMessage(peerAddress)) {
+          checkAddressForExistingConversation(peerAddress);
+          setIsOnNetwork(true);
+        } else {
+          setInnerMessage("Address not on network");
         }
       } catch (error) {
         alert(error);
@@ -70,9 +75,8 @@ export default function ClientList() {
         setIsLoading(false);
       }
     },
-    [peerAddress]
+    [peerAddress, canMessage]
   );
-
   if (loadingConversations) return <div>Loading...</div>;
 
   if (error) {
@@ -133,20 +137,27 @@ export default function ClientList() {
         <div>Loading...</div>
       ) : (
         <ul className="divide-y divide-gray-200">
-          {conversations.map((e, i) => (
+          {[...streamedConversation].map((e, i) => (
             <li
               key={i}
-              onClick={() => setConversation(e)}
-              className="p-4 hover:bg-gray-200 cursor-pointer transition duration-150 ease-in-out flex items-center"
+              onClick={() => setConversation(e as any)}
+              className="p-4 hover:bg-gray-200 cursor-pointer transition gap-3 duration-150 ease-in-out flex items-center"
             >
               <div>
-                <div className="w-8 h-8 bg-blue-500 rounded-full mr-3 flex items-center justify-center text-white font-semibold border border-blue-600">
+                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold border border-blue-600">
                   {e.peerAddress.charAt(0)}x{e.peerAddress.charAt(2)}
                 </div>
               </div>
-              <span className=" flex w-full overflow-hidden">
+              <span className=" flex w-full text-xs break-all">
                 {e.peerAddress}
               </span>
+              {!conversations.find((c) => c.peerAddress === e.peerAddress) && (
+                <div className="flex items-center">
+                  <span className="bg-green-600 w-4 h-4 flex rounded-full">
+                    &nbsp;
+                  </span>
+                </div>
+              )}
             </li>
           ))}
         </ul>
