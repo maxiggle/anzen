@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 import useEventStore from "../../store/useEventStore";
 
 export default function CreateContract() {
-  const { create, getContractContent, listenForContractEvents } = useContract();
+  const { create, getContractContent } = useContract();
   const contractId = useEventStore((state) => state.contractId);
   const contractStatus = useEventStore((state) => state.contractStatus);
 
@@ -20,15 +20,15 @@ export default function CreateContract() {
   const handleCreateContractAndReturnContent = useCallback(async () => {
     setIsGenerating(true);
     setIsNewContractRequested(true);
-    setContractContent(""); // Clear existing content
+    setContractContent("");
     const newContractId = await create(config.employeeAddress, contractTerms);
     console.log("New contract created with ID:", newContractId.toString());
   }, [create, contractTerms]);
 
-  useEffect(() => {
-    const cleanup = listenForContractEvents();
-    return cleanup;
-  }, [listenForContractEvents]);
+  // useEffect(() => {
+  //   const cleanup = listenForContractEvents();
+  //   return cleanup;
+  // }, [listenForContractEvents]);
 
   useEffect(() => {
     async function fetchContractContent() {

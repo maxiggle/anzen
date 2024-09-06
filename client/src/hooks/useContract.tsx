@@ -33,21 +33,21 @@ export default function useContract() {
         }
       })
       .filter((event: ethers.Log | null) => event !== null);
-
-    return events[0].args.contractId;
+    const id = events[0].args.contractId;
+    setContractId(Number(id));
+    return id;
   }
 
-  const listenForContractEvents = () => {
-    employerContract.on("ContractStatusUpdated", (contractId, status) => {
-      console.log(`Contract ID: ${contractId}, New Status: ${status}`);
-      setContractId(Number(contractId));
-      setContractStatus(Number(status));
-    });
+  // const listenForContractEvents = () => {
+  //   employerContract.on("ContractStatusUpdated", (contractId, status) => {
+  //     console.log(`Contract ID: ${contractId}, New Status: ${status}`);
+  //     setContractStatus(Number(status));
+  //   });
 
-    return () => {
-      employerContract.removeAllListeners("ContractStatusUpdated");
-    };
-  };
+  //   return () => {
+  //     employerContract.removeAllListeners("ContractStatusUpdated");
+  //   };
+  // };
 
   async function getContractContent(contractId: number): Promise<string> {
     return employerContract.getContractContent(contractId);
@@ -74,6 +74,5 @@ export default function useContract() {
     getAllContracts,
     generateAttestation,
     getAttestation,
-    listenForContractEvents,
   };
 }
