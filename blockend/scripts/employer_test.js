@@ -533,7 +533,7 @@ const employerAbi = [
 ];
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY_GALADRIEL;
-const contractAddress = "0x4A736124E80eDa4B0DfCCC62E607b34D25a245C9";
+const contractAddress = "0x1D269C99a59056532d38E001a55a0D4f4B016207";
 const RPC_URL = "https://devnet.galadriel.com/"
 const provider = new ethers.JsonRpcProvider(RPC_URL);
 const wallet = new ethers.Wallet(PRIVATE_KEY, provider); 
@@ -600,9 +600,9 @@ async function getContractStatus(contractId) {
 async function main() {
   // await extractTextFromGeneratedContract(1);
   // await getExtractedText(1);
-  await generateContract(employeeAddress, "Position: Software Engineer; Salary: $100,000; Start Date: 2024-09-01")
+  // await generateContract(employeeAddress, "Position: Software Engineer; Salary: $100,000; Start Date: 2024-09-01")
   // await getContractStatus(2);
-  // await getAllContracts();
+  await getAllContracts();
     // await generateContract(employeeAddress, "Position: Software Engineer; Salary: $100,000; Start Date: 2024-09-01") 
     // console.log("Generated ID: ", generatedId);
     // await getContractContent(1);

@@ -1,59 +1,39 @@
 import useContract from "../../hooks/useContract";
 import Button from "../UI/Button";
 import config from "../../utils/config";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
-import useEventStore from "../../store/useEventStore";
+// import useEventStore from "../../store/useEventStore";
 
 export default function CreateContract() {
-  const { create, getContractContent } = useContract();
-  const contractId = useEventStore((state) => state.contractId);
-  const contractStatus = useEventStore((state) => state.contractStatus);
+  const {
+    generateContract,
+    getContractContent,
+    generateAttestation,
+    getAttestation,
+  } = useContract();
 
   const [contractContent, setContractContent] = useState("");
   const [contractTerms, setContractTerms] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
-  const [isNewContractRequested, setIsNewContractRequested] = useState(false);
+  const [contractId, setContractId] = useState(0);
+  const [jsonContent, setJsonContent] = useState("");
   const printTarget = useRef<HTMLDivElement>(null);
 
-  const handleCreateContractAndReturnContent = useCallback(async () => {
+  async function handleCreateContractAndReturnContent(): Promise<void> {
     setIsGenerating(true);
-    setIsNewContractRequested(true);
-    setContractContent("");
-    const newContractId = await create(config.employeeAddress, contractTerms);
-    console.log("New contract created with ID:", newContractId.toString());
-  }, [create, contractTerms]);
+    const result = await generateContract(
+      config.employeeAddress,
+      contractTerms
+    );
+    await new Promise((resolve) => setTimeout(resolve, 30000));
+    const content = await getContractContent(BigInt(result.contractId));
 
-  // useEffect(() => {
-  //   const cleanup = listenForContractEvents();
-  //   return cleanup;
-  // }, [listenForContractEvents]);
-
-  useEffect(() => {
-    async function fetchContractContent() {
-      if (
-        contractId !== null &&
-        contractStatus === 1 &&
-        isNewContractRequested
-      ) {
-        try {
-          const content = await getContractContent(contractId);
-          setContractContent(content);
-        } catch (error) {
-          console.error("Error fetching contract content:", error);
-          setContractContent(
-            "Error fetching contract content. Please try again."
-          );
-        } finally {
-          setIsGenerating(false);
-          setIsNewContractRequested(false);
-        }
-      }
-    }
-
-    fetchContractContent();
-  }, [contractId, contractStatus, getContractContent, isNewContractRequested]);
+    setContractContent(content);
+    setIsGenerating(false);
+    setContractId(result.contractId);
+  }
 
   useEffect(() => {
     if (isPrinting) {
@@ -124,7 +104,22 @@ export default function CreateContract() {
             <ReactMarkdown>{contractContent}</ReactMarkdown>
           </div>
           <div className="flex gap-2 justify-center">
-            <Button variant="outline" loading={isGenerating} onClick={() => {}}>
+            <Button
+              variant="outline"
+              loading={isGenerating}
+              onClick={async () => {
+                await generateAttestation(BigInt(contractId)).then(
+                  async (id) => {
+                    console.log("Attestation ID:", id);
+                    // console.log("Attestation ID:", id);
+                    // await new Promise((resolve) => setTimeout(resolve, 30000));
+                    // const json = await getAttestation(BigInt(13));
+                    // console.log("Azaaaaaaaaaaa", json);
+                    // setJsonContent(json);
+                  }
+                );
+              }}
+            >
               Sign Contract
             </Button>
             <Button

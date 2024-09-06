@@ -2,10 +2,10 @@ import Button from "../../components/UI/Button";
 import DataTable from "../../components/UI/DataTable";
 import { FaPlus } from "react-icons/fa";
 import Model from "../../components/UI/Modal";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import CreateContract from "../../components/Modals/CreateContract";
 import useContract from "../../hooks/useContract";
-import { ContractResult } from "../../utils/types";
+import { ContractData } from "../../utils/types";
 import { truncateText } from "../../utils/TextUtils";
 import AttestationApp from './SignProtocol'
 
@@ -19,83 +19,64 @@ export default function Contract() {
     string | null
   >(null);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [contracts, setContracts] = useState<any | null>(null);
+  const [contracts, setContracts] = useState<ContractData[]>([]);
+
+  const loadContracts = useCallback(async () => {
+    try {
+      const { contractIds, contracts, statuses, createdTimes } =
+        await getAllContracts();
+      const formattedContracts = contractIds.map((id, index) => ({
+        contractId: id,
+        employee: contracts[index].employee,
+        hr: contracts[index].hr,
+        contractContent: contracts[index].contractContent,
+        isApproved: statuses[index],
+        createdAt: createdTimes[index],
+      }));
+      setContracts(formattedContracts);
+    } catch (error) {
+      console.error("Failed to load contracts:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [getAllContracts]);
 
   useEffect(() => {
-    async function loadContracts() {
-      try {
-        const fetchedContracts = await getAllContracts();
-        console.log("Fetched contracts:", fetchedContracts);
-        setContracts(fetchedContracts);
-      } catch (error) {
-        console.error("Failed to fetch contracts:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     loadContracts();
-  }, [getAllContracts]);
+  }, [loadContracts]);
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
   const headers = [
-    "S/N",
+    "Contract ID",
     "Employee Address",
     "Employer Address",
     "Contract Content",
     "Is Approved",
+    "Created At",
   ];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function parseContractData(result: any[]): ContractResult[] {
-    const contractIds = result[0];
-    const contracts = result[1];
+  const tableData = contracts.map((contract) => ({
+    "Contract ID": contract.contractId,
+    "Employee Address": contract.employee,
+    "Employer Address": contract.hr,
+    "Contract Content": (
+      <span
+        onClick={() => {
+          setSelectedContractContent(contract.contractContent);
+          setShowList(true);
+        }}
+        className="cursor-pointer text-blue-500"
+      >
+        {truncateText(contract.contractContent, 50)}
+      </span>
+    ),
+    "Is Approved": contract.isApproved ? "Yes" : "No",
+    "Created At": new Date(contract.createdAt * 1000).toLocaleString(),
+  }));
 
-    return contractIds.map((id: bigint, index: number) => ({
-      contractId: id,
-      contract: {
-        employeeAddress: contracts[index][0],
-        employerAddress: contracts[index][1],
-        contractContent: contracts[index][2],
-        isApproved: contracts[index][3],
-        messages: contracts[index][4],
-        messagesCount: contracts[index][5],
-      },
-    }));
-  }
-
-  const contractsData = contracts ? parseContractData(contracts) : [];
-  const result = contractsData.map(
-    (contract: ContractResult, index: number) => {
-      const truncatedContent = truncateText(
-        contract.contract.contractContent,
-        100
-      );
-      return {
-        "s/n": index + 1,
-        "employee address": contract.contract.employeeAddress,
-        "employer address": contract.contract.employerAddress,
-        "contract content": (
-          <span
-            onClick={() => {
-              setSelectedContractContent(contract.contract.contractContent);
-              setShowList(true);
-            }}
-            className="cursor-pointer text-blue-500"
-          >
-            {truncatedContent}
-          </span>
-        ),
-        "is approved": contract.contract.isApproved ? "Yes" : "No",
-        messages: "",
-        "messages count": "",
-      };
-    }
-  );
   return (
     <div>
       <div className="flex flex-row justify-between items-center">
@@ -121,21 +102,24 @@ export default function Contract() {
               </Button>
             </div>
           }
-          data={result}
+          data={tableData}
           headers={headers}
         />
         <AttestationApp/>
       </div>
 
+      {/* First Modal */}
       <Model state={show} size="3xl" setState={setShow}>
         <CreateContract />
       </Model>
-      <Model state={showList} size="3xl" setState={setShow}>
+
+      {/* Second Modal */}
+      <Model state={showList} size="3xl" setState={setShowList}>
         {selectedContractContent && (
           <div className="p-4">
             <h3 className="text-xl font-semibold">Contract Content</h3>
             <p className="mt-4">{selectedContractContent}</p>
-            <Button onClick={() => setShow(false)} className="mt-4">
+            <Button onClick={() => setShowList(false)} className="mt-4">
               Close
             </Button>
           </div>

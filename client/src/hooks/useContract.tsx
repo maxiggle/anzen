@@ -1,11 +1,8 @@
 import { ethers } from "ethers";
 import config from "../utils/config";
-import { ContractResult } from "../utils/types";
-import useEventStore from "../store/useEventStore";
+import { EmployerContractStruct } from "../utils/types";
 
 export default function useContract() {
-  const setContractId = useEventStore((state) => state.setContractId);
-  const setContractStatus = useEventStore((state) => state.setContractStatus);
   const provider = new ethers.JsonRpcProvider(config.galadrielRpcUrl);
   const signer = new ethers.Wallet(config.galadrielPrivateKey, provider);
   const employerContract = new ethers.Contract(
@@ -14,51 +11,74 @@ export default function useContract() {
     signer
   );
 
-  async function create(
+  async function generateContract(
     employeeAddress: string,
     employeeTerms: string
-  ): Promise<bigint> {
-    const transaction = await employerContract.generateContract(
-      employeeAddress,
-      employeeTerms
-    );
-    const transactionResponse = await transaction.wait();
-    const events = transactionResponse.logs
-      .map((log: ethers.Log) => {
-        try {
-          return employerContract.interface.parseLog(log);
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (_) {
-          return null;
-        }
-      })
-      .filter((event: ethers.Log | null) => event !== null);
-    const id = events[0].args.contractId;
-    setContractId(Number(id));
-    return id;
+  ): Promise<{ contractId: number }> {
+    try {
+      const transaction = await employerContract.generateContract(
+        employeeAddress,
+        employeeTerms
+      );
+
+      const transactionResponse = await transaction.wait();
+
+      const events = transactionResponse.logs
+        .map((log: ethers.Log) => {
+          try {
+            return employerContract.interface.parseLog(log);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          } catch (_) {
+            return null;
+          }
+        })
+        .filter((event: ethers.Log | null) => event !== null);
+
+      const contractId = Number(events[0].args.contractId);
+      return { contractId };
+    } catch (error) {
+      console.error("Error generating contract:", error);
+      throw error;
+    }
   }
 
-  // const listenForContractEvents = () => {
-  //   employerContract.on("ContractStatusUpdated", (contractId, status) => {
-  //     console.log(`Contract ID: ${contractId}, New Status: ${status}`);
-  //     setContractStatus(Number(status));
-  //   });
+  async function getContractContent(contractId: bigint): Promise<string> {
+    console.log("Fetching contract content for contract ID:", contractId);
+    try {
+      return await employerContract.getContractContent(contractId);
+    } catch (error) {
+      console.error("Error fetching contract content:", error);
+      throw error;
+    }
+  }
+  async function getAllContracts(): Promise<{
+    contractIds: number[];
+    contracts: EmployerContractStruct[];
+    statuses: boolean[];
+    createdTimes: number[];
+  }> {
+    try {
+      const result = await employerContract.getAllContracts();
 
-  //   return () => {
-  //     employerContract.removeAllListeners("ContractStatusUpdated");
-  //   };
-  // };
+      // Convert BigInts to numbers
+      const contractIds = result[0].map((id: bigint) => Number(id));
+      const contracts = result[1];
+      const statuses = result[2];
+      const createdTimes = result[3].map((time: bigint) => Number(time));
 
-  async function getContractContent(contractId: number): Promise<string> {
-    return employerContract.getContractContent(contractId);
+      return {
+        contractIds,
+        contracts,
+        statuses,
+        createdTimes,
+      };
+    } catch (error) {
+      console.error("Error fetching all contracts:", error);
+      throw error;
+    }
   }
 
-  async function getAllContracts(): Promise<ContractResult> {
-    const result = await employerContract.getAllContracts();
-    return result;
-  }
-
-  async function generateAttestation(contractId: number): Promise<bigint> {
+  async function generateAttestation(contractId: bigint): Promise<bigint> {
     const attestId = await employerContract.extractTextFromGeneratedContract(
       contractId
     );
@@ -69,7 +89,7 @@ export default function useContract() {
     return employerContract.getExtractedText(contractId);
   }
   return {
-    create,
+    generateContract,
     getContractContent,
     getAllContracts,
     generateAttestation,
