@@ -15,7 +15,7 @@ import {
 import { ethers } from 'ethers';
 import { fetchAccountInfo, fetchKYCViewerInfo } from '../kinto/KintoFunctions';
 import authService from '../authService';
-
+import useStartExtConversation from '../../hooks/useStartExtConversation';
 
 const privateKey = "0xef060cb7d3f8ec2db57965356a38775806ed527dafe85a1ecee920f1673d4b0d";
 
@@ -113,9 +113,13 @@ const AttestationApp: React.FC = () => {
         updatedKeys[index] = value;
         setSignerPublicKeys(updatedKeys);
     };
+    
+    const { startConversation } = useStartExtConversation();
 
     const createAttestation = async () => {
         try {
+
+
             let attestationData: Record<string, any> = { ...contractData };
     
             if (signatureCount > 0) {
@@ -150,13 +154,18 @@ const AttestationApp: React.FC = () => {
             console.log('The account is', accountInfoView)
             const kycViewerInfo = await fetchKYCViewerInfo(accountInfo.walletAddress as Address);
             console.log('The wallets are', kycViewerInfo.getWalletOwners)
-            // setwalletViewer(kycViewerInfo.getWalletOwners);
-            console.log('The wallets are', walletViewer)
-            console.log('The wallets are', walletViewer)
-    
-            // Utilisation du service d'authentification pour notifier les signataires
-            await authService.notifySigners(initialAttestation.attestationId, signerPublicKeys);
-            setStatus(prevStatus => `${prevStatus}. Signers have been notified.`);
+        
+            for (const signerAddress of signerPublicKeys) {
+                try {
+                  const message = `Nouvelle attestation à signer. ID: ${initialAttestation.attestationId}`;
+                  const result = await startConversation(signerAddress, message);
+                  console.log(`Message sent to ${signerAddress}:`, result);
+                } catch (error) {
+                  console.error(`Error sending message to ${signerAddress}:`, error);
+                }
+              }
+        
+            // setStatus(prevStatus => `${prevStatus}. Signers have been notified.`);
         } catch (error) {
             console.error("Error creating attestation:", error);
             setStatus(`Error creating attestation: ${(error as Error).message}`);
