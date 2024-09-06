@@ -4,7 +4,7 @@ import config from "../../utils/config";
 import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import attestationService from "../../pages/dashboard/attestationJsonService";
-// import useEventStore from "../../store/useEventStore";
+import useAttestationStore from "../../store/useAttestationStore";
 
 export default function CreateContract() {
   const {
@@ -19,7 +19,9 @@ export default function CreateContract() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const [contractId, setContractId] = useState(0);
-  const [jsonContent, setJsonContent] = useState("");
+  const setAttestationJson = useAttestationStore(
+    (state) => state.setAttestationJson
+  );
   const printTarget = useRef<HTMLDivElement>(null);
 
   async function handleCreateContractAndReturnContent(): Promise<void> {
@@ -129,6 +131,7 @@ export default function CreateContract() {
                     await new Promise((resolve) => setTimeout(resolve, 30000));
                     await getAttestation(id).then((json) => {
                       console.log("Attestation JSON:", json);
+                      setAttestationJson(json);
                       sendAttestation(json);
                     });
                   }
