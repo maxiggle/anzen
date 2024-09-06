@@ -5,16 +5,17 @@ import EmojiSelect from "../UI/EmojiSelect";
 
 import {
   CachedConversation,
+  Conversation,
   useSendMessage,
-  useStartConversation,
 } from "@xmtp/react-sdk";
 import Messages from "./Messages";
+import useStartExtConversation from "../../hooks/useStartExtConversation";
 
 interface IProps {
   userAddress: string;
   newAddress?: string;
-  conversation: CachedConversation | null;
-  setConversation: (c: CachedConversation) => void;
+  conversation: CachedConversation | Conversation | any | null;
+  setConversation: (c: CachedConversation | Conversation) => void;
 }
 
 export default function ChatBox({
@@ -23,11 +24,12 @@ export default function ChatBox({
   conversation,
   setConversation,
 }: IProps) {
-  const { startConversation } = useStartConversation();
   const { sendMessage } = useSendMessage();
 
   const [isSending, setIsSending] = useState(false);
   const [message, setMessage] = useState("");
+
+  const { startConversation } = useStartExtConversation();
 
   const handleStartConversation = useCallback(
     async (e: React.FormEvent) => {
@@ -38,16 +40,15 @@ export default function ChatBox({
 
         if (newAddress && message) {
           setIsSending(true);
-          const { cachedConversation } = await startConversation(
-            newAddress,
-            message
-          );
+          const res = await startConversation(newAddress, message);
 
-          console.log(cachedConversation);
+          if (res && res.conversation) {
+            console.log(res);
 
-          if (cachedConversation) {
-            setConversation(cachedConversation);
+            setConversation(res.conversation);
+            res.conversation.send("Connected");
           }
+
           setIsSending(false);
         }
       } catch (error) {

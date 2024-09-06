@@ -6,9 +6,13 @@ export default function useStartExtConversation() {
 
   const startConversation = async (address: string, message: string) => {
     if (!client) return;
-    if (!isValidAddress(address)) alert("invalid address");
+    if (!isValidAddress(address)) {
+      alert("invalid address");
+      return;
+    }
     if (!(await client.canMessage(address))) {
       alert("conversation request cannot be sent");
+      return;
     }
 
     for (const conversation of await client.conversations.list()) {
@@ -20,6 +24,10 @@ export default function useStartExtConversation() {
 
     const conversation = await client.conversations.newConversation(address);
     await conversation.send(message);
+
+    return {
+      conversation,
+    };
   };
   return {
     startConversation,

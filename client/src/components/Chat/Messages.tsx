@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   CachedConversation,
   CachedMessage,
   ContentTypeMetadata,
+  Conversation,
   DecodedMessage,
   useMessages,
   useStreamMessages,
@@ -11,12 +13,12 @@ import { useCallback, useEffect, useState } from "react";
 import Bubble from "./Bubble";
 
 type IProps = {
-  conversation: CachedConversation;
+  conversation: CachedConversation | Conversation | any;
   currentUserAddress: string;
 };
 
 export default function Messages({ conversation, currentUserAddress }: IProps) {
-  const { error, messages, isLoading } = useMessages(conversation);
+  const { error, messages, isLoading } = useMessages(conversation as any);
 
   const [streamedMessages, setStreamedMessages] = useState<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
