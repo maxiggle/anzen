@@ -119,7 +119,32 @@ contract EmployerContract {
             "user",
             string(
                 abi.encodePacked(
-                    "Generate an actual employment contract not an example and it should be based on the following terms: ",
+                    "Immitate the following texts and generate a short contract. Do not include any address, phone number, name and include my terms This Employment Agreement (Agreement) entered this 10th day of April, 2024 (Effective Date) BETWEEN: ",
+                    "GRASCOPE INDUSTRIES LTD, a private limited liability company incorporated under the Laws of the Federal Republic of Nigeria, ",
+                    "with its registered office in Nigeria, (hereinafter referred to as 'The Employer,' which term shall, where the context so admits, ",
+                    "include its agents, successors, and assigns) of the one Part; AND GODWIN ALEXANDER EKAINU of 27 Okocha Street Mgbouba NTA, ",
+                    "Port Harcourt, Nigeria (Tel: +2348064875115; Email: clsyfriday@gmail.com ) (hereinafter referred to as 'The Employee') of the other part; ",
+                    "Both may individually be referred to as 'Party' and collectively referred to as 'The Parties'. RECITALS In consideration of the covenants ",
+                    "and agreements herein contained and the monies to be paid hereunder, the Employer hereby employs the Employee and the Employee hereby ",
+                    "agrees to perform services as an Employee of the Employer, upon the following terms and conditions: 1. ENGAGEMENT Subject to and in accordance ",
+                    "with the terms and conditions outlined below, the Employer shall employ the Employee in the capacity of MOBILE DEVELOPER. 2. TERM The Employee's ",
+                    "engagement term shall commence remotely on April 10, 2024, and shall continue for a period of one (1) year, unless terminated earlier as specified in this ",
+                    "Agreement. It is understood and agreed that the initial 6 (six) months will constitute a probationary period during which the Employee`s performance will ",
+                    "be under observation. Monthly performance evaluations will be conducted, culminating in a comprehensive review at the end of the probationary period. ",
+                    "The Employer retains the right to, at its discretion, extend the probationary period for a more thorough assessment of the Employee`s performance. Any such ",
+                    "extension will be communicated in writing to the Employee. 3. WORK SCHEDULE 3.1 The Employee`s normal hours of work are Mondays to Fridays, from ",
+                    "8:30 am to 5:00 pm with a one-hour break. If the exigencies of the business require it, the Employee may be required to work outside these hours, including, ",
+                    "late nights, weekends, and public holidays, as necessary to perform the duties without further remuneration. 3.2 The Employee shall not exempt themselves ",
+                    "from work without obtaining prior written consent from the Employer, based on grounds considered cogent by the Employer, at least 24 hours in advance. 4. DUTIES OF THE EMPLOYEE ",
+                    "4.1 The Employee will carry out the duties that are assigned to them by the Employer, including but not limited to the following: i. Develop high-quality mobile applications for iOS ",
+                    "and/or Android platforms using programming languages such as Swift, Kotlin, or Flutter. ii. Collaborate with cross-functional teams, including designers, product managers, ",
+                    "and other developers, to create intuitive and user-friendly mobile experiences. iii. Write clean, maintainable, and efficient code following best practices and coding standards. ",
+                    "iv. Translate design mock-ups and wireframes into responsive and visually appealing user interfaces. v. Ensure a seamless user experience by optimizing UI performance and responsiveness ",
+                    "across various devices and screen sizes. vi. Conduct thorough testing of applications to identify and fix bugs, performance issues, and other potential problems. ",
+                    "vii. Continuously optimize mobile applications for speed, efficiency, and resource usage. viii. Use version control systems such as Git to manage codebase changes and collaborate effectively with team members. ",
+                    "ix. Participate in code reviews to ensure code quality, consistency, and adherence to coding standards. x. Create and maintain technical documentation, including design documents, API references, and user manuals. ",
+                    "xi. Keep abreast of the latest trends, tools, and technologies in mobile development. xii. Implement security best practices to safeguard user data and protect against vulnerabilities such as data breaches and unauthorized access. ",
+                    "Ensure compliance with relevant regulations and standards such as GDPR, NDPR, etc.",
                     employeeTerms
                 )
             )
