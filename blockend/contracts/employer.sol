@@ -119,6 +119,7 @@ contract EmployerContract {
             "user",
             string(
                 abi.encodePacked(
+                    "You are an AI lawyer who generates law binding contracts\n",
                     "Immitate the following texts and generate a short contract. Do not include any address, phone number, name and include my terms This Employment Agreement (Agreement) entered this 10th day of April, 2024 (Effective Date) BETWEEN: ",
                     "GRASCOPE INDUSTRIES LTD, a private limited liability company incorporated under the Laws of the Federal Republic of Nigeria, ",
                     "with its registered office in Nigeria, (hereinafter referred to as 'The Employer,' which term shall, where the context so admits, ",
@@ -249,35 +250,31 @@ contract EmployerContract {
     }
 
     function getAllContracts()
-        public
+        external
         view
         returns (
-            uint256[] memory,
-            EmployerContractStruct[] memory,
-            bool[] memory,
-            uint256[] memory
+            uint256[] memory contractIds,
+            EmployerContractStruct[] memory contracts,
+            bool[] memory statuses,
+            uint256[] memory createdTimes
         )
     {
-        uint256[] memory contractIds = new uint256[](
-            employerContractStructsCount
-        );
-        EmployerContractStruct[]
-            memory contracts = new EmployerContractStruct[](
-                employerContractStructsCount
-            );
-        bool[] memory statuses = new bool[](employerContractStructsCount);
-        uint256[] memory createdTimes = new uint256[](
-            employerContractStructsCount
-        );
+        uint256 count = employerContractStructsCount;
+        contractIds = new uint256[](count);
+        contracts = new EmployerContractStruct[](count);
+        statuses = new bool[](count);
+        createdTimes = new uint256[](count);
 
-        for (uint256 i = 1; i <= employerContractStructsCount; i++) {
-            contractIds[i - 1] = i;
-            contracts[i - 1] = employerContractStructs[i];
-            statuses[i - 1] = employerContractStructs[i].isApproved;
-            createdTimes[i - 1] = employerContractStructs[i].createdAt;
+        for (uint256 i = 0; i < count; i++) {
+            uint256 contractId = i + 1;
+            EmployerContractStruct
+                storage contractStruct = employerContractStructs[contractId];
+
+            contractIds[i] = contractId;
+            contracts[i] = contractStruct;
+            statuses[i] = contractStruct.isApproved;
+            createdTimes[i] = contractStruct.createdAt;
         }
-
-        return (contractIds, contracts, statuses, createdTimes);
     }
 
     function extractTextFromGeneratedContract(
