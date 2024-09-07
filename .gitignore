@@ -9,3 +9,7 @@ client/vite.config.js
 client/certs
 api/src/.env
 .env
+/node_modules
+/node_modules/.bin/
+/package-lock.json
+/package.json

@@ -34,9 +34,185 @@ declare global {
       ethereum?: ethers.Eip1193Provider;
     }
   }
+ 
+  export const cleanAndParseJSON = (jsonString: string) => {
+    // Supprimer les balises ```json au début et à la fin
+    const cleaned = jsonString.replace(/^```json\n|\n```$/g, '');
+    return JSON.parse(cleaned);
+  };
+
   
+  
+  export const createSchema = async (attestationJsonString: string, signatureCount : any) => {
+    try {
+      // Nettoyer et parser le JSON
+      const attestationJson = cleanAndParseJSON(attestationJsonString);
+  
+      let schemaItems: SchemaItem[] = Object.entries(attestationJson).map(([key, value]) => ({
+        name: key,
+        type: "string"  
+      }));
+  
+      if (signatureCount > 0) {
+        for (let i = 1; i <= signatureCount; i++) {
+          schemaItems.push({ name: `signer${i}Signed`, type: "string" });
+          schemaItems.push({ name: `signer${i}Address`, type: "string" });
+          schemaItems.push({ name: `signer${i}Signature`, type: "string" });
+        }
+        // Ajouter le champ status seulement si des signatures sont requises
+        schemaItems.push({ name: "status", type: "string" });
+      }
+  
+      const res = await client.createSchema({
+        name: 'work contract',
+        data: schemaItems,
+      });
+  
+      console.log("Schema created:", res);
+      return res.schemaId;
+    //   setSchemaId(res.schemaId);
+    //   setStatus(`Schema created with ID: ${res.schemaId}`);
+    //   setDynamicFields(schemaItems);
+    } catch (error) {
+      console.error("Error creating schema:", error);
+    //   setStatus(`Error creating schema: ${(error as Error).message}`);
+    }
+  };
+
+//   export const [attestationId, setAttestationId] = useState<string>('');
+//   export const [accountInfoView, setAccountInfoView] = useState<KintoAccountInfo | undefined>(undefined);
+
+
+//   const { startConversation } = useStartExtConversation();
+
+
+
+//   export const createAttestation = async (contractData: any, signatureCount : any, signerPublicKeys : any,  : any) => {
+//     try {
+
+
+//         let attestationData: Record<string, any> = { ...contractData };
+
+//         console.log('the attestation data ',attestationData);
+
+//         if (signatureCount > 0) {
+//             for (let i = 1; i <= signatureCount; i++) {
+//                 if (!signerPublicKeys[i-1] || !ethers.isAddress(signerPublicKeys[i-1])) {
+//                     throw new Error(`Invalid public key for signer ${i}`);
+//                 }
+//                 attestationData[`signer${i}Signed`] = false;
+//                 attestationData[`signer${i}Address`] = signerPublicKeys[i-1];
+//                 attestationData[`signer${i}Signature`] = "0x";
+//             }
+//             attestationData.status = "pending_signatures";
+//         }
+
+//         console.log("Creating attestation with data:", attestationData);
+
+//         const initialAttestation = await client.createAttestation({
+//             idSchema,
+//             data: attestationData,
+//             indexingValue: '111',
+//             recipients: signerPublicKeys,
+//             linkedAttestationId: null,
+//         });
+
+//         console.log("Attestation created:", initialAttestation);
+//         console.log("Full attestation data:", attestationData);
+//         setAttestationId(initialAttestation.attestationId);
+//         // setStatus(`Initial attestation created with ID: ${initialAttestation.attestationId}`);
+
+//         const accountInfo = await fetchAccountInfo();
+//         // setAccountInfoView(accountInfo);
+//         // console.log('The account is', accountInfoView)
+//         const kycViewerInfo = await fetchKYCViewerInfo(accountInfo.walletAddress as Address);
+//         console.log('The wallets are', kycViewerInfo.getWalletOwners)
+    
+//         for (const signerAddress of signerPublicKeys) {
+//             try {
+//               const message = `Nouvelle attestation à signer. ID: ${initialAttestation.attestationId}`;
+//               const result = await startConversation(signerAddress, message);
+//               console.log(`Message sent to ${signerAddress}:`, result);
+//             } catch (error) {
+//               console.error(`Error sending message to ${signerAddress}:`, error);
+//             }
+//           }
+    
+//         // setStatus(prevStatus => `${prevStatus}. Signers have been notified.`);
+//     } catch (error) {
+//         console.error("Error creating attestation:", error);
+//         // setStatus(`Error creating attestation: ${(error as Error).message}`);
+//     }
+// };
+
+// const { startConversation } = useStartExtConversation();
+
+export const createAttestation = async (
+    contractData: any, 
+    signatureCount: number, 
+    signerPublicKeys: string[], 
+    idSchema: string,
+    sendMessages: (attestationId: string, signerAddresses: string[]) => Promise<void>
+) => {
+    try {
+        let attestationData: Record<string, any> = { ...contractData };
+
+        console.log('the attestation data ', attestationData);
+
+        if (signatureCount > 0) {
+            for (let i = 1; i <= signatureCount; i++) {
+                if (!signerPublicKeys[i-1] || !ethers.isAddress(signerPublicKeys[i-1])) {
+                    throw new Error(`Invalid public key for signer ${i}`);
+                }
+                attestationData[`signer${i}Signed`] = false;
+                attestationData[`signer${i}Address`] = signerPublicKeys[i-1];
+                attestationData[`signer${i}Signature`] = "0x";
+            }
+            attestationData.status = "pending_signatures";
+        }
+
+        console.log("Creating attestation with data:", attestationData);
+
+        const initialAttestation = await client.createAttestation({
+            schemaId: idSchema,
+            data: attestationData,
+            indexingValue: '111',
+            recipients: signerPublicKeys,
+            linkedAttestationId: null,
+        });
+
+        console.log("Attestation created:", initialAttestation);
+        console.log("Full attestation data:", attestationData);
+
+        await sendMessages(initialAttestation.attestationId, signerPublicKeys);
+
+        const accountInfo = await fetchAccountInfo();
+        const kycViewerInfo = await fetchKYCViewerInfo(accountInfo.walletAddress as Address);
+        console.log('The wallets are', kycViewerInfo.getWalletOwners);
+
+    } catch (error) {
+        console.error("Error creating attestation:", error);
+    }
+};
+
+
 
 const AttestationApp: React.FC = () => {
+
+    const { startConversation } = useStartExtConversation();
+
+    const sendMessages = async (attestationId: string, signerAddresses: string[]) => {
+        for (const signerAddress of signerAddresses) {
+            try {
+                const message = `Nouvelle attestation à signer. ID: ${attestationId}`;
+                const result = await startConversation(signerAddress, message);
+                console.log(`Message sent to ${signerAddress}:`, result);
+            } catch (error) {
+                console.error(`Error sending message to ${signerAddress}:`, error);
+            }
+        }
+    }
+
     const [schemaId, setSchemaId] = useState<string>('');
     const [attestationId, setAttestationId] = useState<string>('');
     const [contractData, setContractData] = useState<Record<string, any>>({});
@@ -107,6 +283,7 @@ const AttestationApp: React.FC = () => {
             setStatus(`Error creating schema: ${(error as Error).message}`);
         }
     };
+    
 
     const updateSignerPublicKey = (index: number, value: string) => {
         const updatedKeys = [...signerPublicKeys];
@@ -114,64 +291,7 @@ const AttestationApp: React.FC = () => {
         setSignerPublicKeys(updatedKeys);
     };
     
-    const { startConversation } = useStartExtConversation();
-
-    const createAttestation = async () => {
-        try {
-
-
-            let attestationData: Record<string, any> = { ...contractData };
-    
-            if (signatureCount > 0) {
-                for (let i = 1; i <= signatureCount; i++) {
-                    if (!signerPublicKeys[i-1] || !ethers.isAddress(signerPublicKeys[i-1])) {
-                        throw new Error(`Invalid public key for signer ${i}`);
-                    }
-                    attestationData[`signer${i}Signed`] = false;
-                    attestationData[`signer${i}Address`] = signerPublicKeys[i-1];
-                    attestationData[`signer${i}Signature`] = "0x";
-                }
-                attestationData.status = "pending_signatures";
-            }
-    
-            console.log("Creating attestation with data:", attestationData);
-    
-            const initialAttestation = await client.createAttestation({
-                schemaId,
-                data: attestationData,
-                indexingValue: '111',
-                recipients: signerPublicKeys,
-                linkedAttestationId: null,
-            });
-    
-            console.log("Attestation created:", initialAttestation);
-            console.log("Full attestation data:", attestationData);
-            setAttestationId(initialAttestation.attestationId);
-            setStatus(`Initial attestation created with ID: ${initialAttestation.attestationId}`);
-    
-            const accountInfo = await fetchAccountInfo();
-            setAccountInfoView(accountInfo);
-            console.log('The account is', accountInfoView)
-            const kycViewerInfo = await fetchKYCViewerInfo(accountInfo.walletAddress as Address);
-            console.log('The wallets are', kycViewerInfo.getWalletOwners)
-        
-            for (const signerAddress of signerPublicKeys) {
-                try {
-                  const message = `Nouvelle attestation à signer. ID: ${initialAttestation.attestationId}`;
-                  const result = await startConversation(signerAddress, message);
-                  console.log(`Message sent to ${signerAddress}:`, result);
-                } catch (error) {
-                  console.error(`Error sending message to ${signerAddress}:`, error);
-                }
-              }
-        
-            // setStatus(prevStatus => `${prevStatus}. Signers have been notified.`);
-        } catch (error) {
-            console.error("Error creating attestation:", error);
-            setStatus(`Error creating attestation: ${(error as Error).message}`);
-        }
-    };
-
+  
     
 
 

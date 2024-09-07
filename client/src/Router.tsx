@@ -16,7 +16,7 @@ import DashboardSettings from "./pages/dashboard/Settings";
 import DashboardChat from "./pages/dashboard/Chat";
 import EmployeeDashBoard from "./pages/dashboard/Employeedashboard";
 import KintoConnect from "./pages/kinto/KintoConnect";
-import Allocatebudget from "./pages/kinto/Allocatebudget";
+// import ProjectBudget from "./pages/kinto/ProjectBudget";
 // import SignProtocol from "./pages/dashboard/SignProtocol"
 
 const App: React.FC = () => {
@@ -39,7 +39,7 @@ const App: React.FC = () => {
           <Route path="/dashboard/settings" element={<DashboardSettings />} />
           <Route path="/dashboard/employee" element={<EmployeeDashBoard />} />
           <Route path="/kinto/KintoConnect" element={<KintoConnect/>} />
-          <Route path="/kinto/Allocatebudget" element={<Allocatebudget/>} />
+          {/* <Route path="/kinto/ProjectBudget" element={<ProjectBudget/>} /> */}
         </Route>
       </Routes>
     </Router>

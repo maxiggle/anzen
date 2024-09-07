@@ -28,7 +28,9 @@ import {
   unauthorizeUser, 
   withdrawFunds, 
   getContractBalance, 
-  getUserAllocation 
+  getUserAllocation,
+  initializeAndApproveMonthlyTransfer,
+  executeMonthlyTransferIfNeeded
 } from './KintoFunctions';
 
 interface KYCViewerInfo {
@@ -48,7 +50,10 @@ export const totalAmount = BigInt("1000000000000000");
 
 
 
-const KintoConnect: React.FC = () => {
+export const KintoConnect: React.FC<{
+  onAuthenticated?: (accountInfo: KintoAccountInfo) => void;
+  children?: React.ReactNode;
+}> = ({ onAuthenticated, children }) => {
   const [accountInfo, setAccountInfo] = useState<KintoAccountInfo | undefined>(undefined);
   const [kycViewerInfo, setKYCViewerInfo] = useState<KYCViewerInfo | undefined>(undefined);
   const [counter, setCounter] = useState<number>(0);
@@ -58,6 +63,13 @@ const KintoConnect: React.FC = () => {
   const [recipientAddress, setRecipientAddress] = useState<string>('');
   const [transferAmount, setTransferAmount] = useState<string>('');
   const [destinationKYCInfo, setDestinationKYCInfo] = useState<KYCViewerInfo | null>(null);
+  const [budgetTokenAddress, setBudgetTokenAddress] = useState<string>('');
+  const [budgetAmount, setBudgetAmount] = useState<string>('');
+  const [authorizedUser, setAuthorizedUser] = useState<string>('');
+  const [monthlyRecipient, setMonthlyRecipient] = useState<string>('');
+  const [monthlyAmount, setMonthlyAmount] = useState<string>('');
+  const [monthlyTokenAddress, setMonthlyTokenAddress] = useState<string>('');
+  const [monthlyMaxAllowance, setMonthlyMaxAllowance] = useState<string>('');
 
   const handleSetupAndRunMonthlyTransfer = async () => {
     try {
@@ -81,8 +93,11 @@ const KintoConnect: React.FC = () => {
     if (accountInfo?.walletAddress) {
       fetchKYCViewerInfo(accountInfo.walletAddress as Address).then(setKYCViewerInfo);
       fetchTokenBalances(accountInfo.walletAddress as Address).then(setTokenBalances);
+      if (onAuthenticated) {
+        onAuthenticated(accountInfo);
+      }
     }
-  }, [accountInfo]);
+  }, [accountInfo, onAuthenticated]);
 
   useEffect(() => {
     if (recipientAddress && recipientAddress.length === 42) {
@@ -101,7 +116,6 @@ const KintoConnect: React.FC = () => {
       console.error('Failed to login:', error);
     }
   };
-  
 
   const handleIncreaseCounter = async () => {
     setLoading(true);
@@ -132,6 +146,64 @@ const KintoConnect: React.FC = () => {
       setSelectedToken(null);
     } catch (error) {
       console.error('Failed to transfer token:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInitializeBudgetAllocation = async () => {
+    if (!budgetTokenAddress) {
+      console.log('Initialization cancelled: missing token address');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await initializeBudgetAllocation(budgetTokenAddress as Address);
+      console.log('Budget allocation initialized successfully');
+      // Optionally, you can clear the input field or show a success message
+      setBudgetTokenAddress('');
+    } catch (error) {
+      console.error('Failed to initialize budget allocation:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAllocateBudget = async () => {
+    if (!budgetAmount) {
+      console.log('Budget allocation cancelled: missing amount');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const amount = BigInt(parseFloat(budgetAmount) * Math.pow(10, 18)); // Assuming 18 decimals, adjust if needed
+      await allocateBudget(amount);
+      console.log('Budget allocated successfully');
+      // Optionally, you can clear the input field or show a success message
+      setBudgetAmount('');
+    } catch (error) {
+      console.error('Failed to allocate budget:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAuthorizeUser = async () => {
+    if (!authorizedUser) {
+      console.log('User authorization cancelled: missing address');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await authorizeUser(authorizedUser as Address);
+      console.log('User authorized successfully');
+      // Optionally, you can clear the input field or show a success message
+      setAuthorizedUser('');
+    } catch (error) {
+      console.error('Failed to authorize user:', error);
     } finally {
       setLoading(false);
     }
@@ -168,6 +240,43 @@ const KintoConnect: React.FC = () => {
       {address.slice(0, 10)}...{address.slice(-10)}
     </div>
   );
+
+  const handleInitializeMonthlyTransfer = async () => {
+    if (!monthlyRecipient || !monthlyAmount || !monthlyTokenAddress || !monthlyMaxAllowance) {
+      console.log('Monthly transfer initialization cancelled: missing information');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const amount = BigInt(parseFloat(monthlyAmount) * Math.pow(10, 18)); // Assuming 18 decimals, adjust if needed
+      const maxAllowance = BigInt(parseFloat(monthlyMaxAllowance) * Math.pow(10, 18));
+      await initializeAndApproveMonthlyTransfer(
+        monthlyRecipient as Address,
+        amount,
+        monthlyTokenAddress as Address,
+        maxAllowance
+      );
+      console.log('Monthly transfer initialized successfully');
+      // Optionally, clear input fields or show a success message
+    } catch (error) {
+      console.error('Failed to initialize monthly transfer:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleExecuteMonthlyTransfer = async () => {
+    setLoading(true);
+    try {
+      await executeMonthlyTransferIfNeeded();
+      console.log('Monthly transfer executed successfully');
+    } catch (error) {
+      console.error('Failed to execute monthly transfer:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <WholeWrapper>
@@ -303,6 +412,103 @@ const KintoConnect: React.FC = () => {
                   </TransferSection>
                 </Column>
               </ThreeColumnLayout>
+              <BudgetAllocationSection>
+                <ColumnHeader>Allocate Budget</ColumnHeader>
+                <BudgetAllocationContent>
+                  <TextField
+                    fullWidth
+                    label="Token Address"
+                    value={budgetTokenAddress}
+                    onChange={(e) => setBudgetTokenAddress(e.target.value)}
+                  />
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={handleInitializeBudgetAllocation} 
+                    disabled={loading || !budgetTokenAddress}
+                  >
+                    {loading ? <CircularProgress size={24} /> : 'Initialize Budget Allocation'}
+                  </Button>
+
+                  <TextField
+                    fullWidth
+                    label="Amount to Allocate"
+                    type="number"
+                    value={budgetAmount}
+                    onChange={(e) => setBudgetAmount(e.target.value)}
+                  />
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={handleAllocateBudget} 
+                    disabled={loading || !budgetAmount}
+                  >
+                    {loading ? <CircularProgress size={24} /> : 'Allocate Budget'}
+                  </Button>
+
+                  <TextField
+                    fullWidth
+                    label="Authorized User Address"
+                    value={authorizedUser}
+                    onChange={(e) => setAuthorizedUser(e.target.value)}
+                  />
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={handleAuthorizeUser} 
+                    disabled={loading || !authorizedUser}
+                  >
+                    {loading ? <CircularProgress size={24} /> : 'Authorize User'}
+                  </Button>
+                </BudgetAllocationContent>
+              </BudgetAllocationSection>
+              <MonthlyTransferSection>
+            <ColumnHeader>Monthly Transfer</ColumnHeader>
+            <MonthlyTransferContent>
+              <TextField
+                fullWidth
+                label="Recipient Address"
+                value={monthlyRecipient}
+                onChange={(e) => setMonthlyRecipient(e.target.value)}
+              />
+              <TextField
+                fullWidth
+                label="Monthly Amount"
+                type="number"
+                value={monthlyAmount}
+                onChange={(e) => setMonthlyAmount(e.target.value)}
+              />
+              <TextField
+                fullWidth
+                label="Token Address"
+                value={monthlyTokenAddress}
+                onChange={(e) => setMonthlyTokenAddress(e.target.value)}
+              />
+              <TextField
+                fullWidth
+                label="Max Allowance"
+                type="number"
+                value={monthlyMaxAllowance}
+                onChange={(e) => setMonthlyMaxAllowance(e.target.value)}
+              />
+              <Button 
+                variant="contained" 
+                color="primary" 
+                onClick={handleInitializeMonthlyTransfer} 
+                disabled={loading || !monthlyRecipient || !monthlyAmount || !monthlyTokenAddress || !monthlyMaxAllowance}
+              >
+                {loading ? <CircularProgress size={24} /> : 'Initialize Monthly Transfer'}
+              </Button>
+              <Button 
+                variant="contained" 
+                color="secondary" 
+                onClick={handleExecuteMonthlyTransfer} 
+                disabled={loading}
+              >
+                {loading ? <CircularProgress size={24} /> : 'Execute Monthly Transfer'}
+              </Button>
+            </MonthlyTransferContent>
+          </MonthlyTransferSection>
             </>
           ) : (
             <CircularProgress />
@@ -313,6 +519,34 @@ const KintoConnect: React.FC = () => {
     </WholeWrapper>
   );
 };
+
+
+const MonthlyTransferSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 20px;
+`;
+
+const MonthlyTransferContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const BudgetAllocationSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 20px;
+`;
+
+const BudgetAllocationContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
 
 const WholeWrapper = styled.div`
   flex-flow: column nowrap;
