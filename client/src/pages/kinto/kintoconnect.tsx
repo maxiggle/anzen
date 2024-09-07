@@ -33,6 +33,14 @@ import {
   executeMonthlyTransferIfNeeded
 } from './KintoFunctions';
 
+import BudgetAllocationSectionComponent from './BudgetAllocationSectionComponent';
+import MonthlyTransferSectionComponent from './MonthlyTransferSectionComponent';
+import TransferFundsSectionComponent from './TransferFundsSectionComponent';
+
+
+
+
+
 interface KYCViewerInfo {
   isIndividual: boolean;
   isCorporate: boolean;
@@ -50,10 +58,7 @@ export const totalAmount = BigInt("1000000000000000");
 
 
 
-export const KintoConnect: React.FC<{
-  onAuthenticated?: (accountInfo: KintoAccountInfo) => void;
-  children?: React.ReactNode;
-}> = ({ onAuthenticated, children }) => {
+export const KintoConnect: React.FC = () => {
   const [accountInfo, setAccountInfo] = useState<KintoAccountInfo | undefined>(undefined);
   const [kycViewerInfo, setKYCViewerInfo] = useState<KYCViewerInfo | undefined>(undefined);
   const [counter, setCounter] = useState<number>(0);
@@ -93,11 +98,8 @@ export const KintoConnect: React.FC<{
     if (accountInfo?.walletAddress) {
       fetchKYCViewerInfo(accountInfo.walletAddress as Address).then(setKYCViewerInfo);
       fetchTokenBalances(accountInfo.walletAddress as Address).then(setTokenBalances);
-      if (onAuthenticated) {
-        onAuthenticated(accountInfo);
-      }
     }
-  }, [accountInfo, onAuthenticated]);
+  }, [accountInfo]);
 
   useEffect(() => {
     if (recipientAddress && recipientAddress.length === 42) {
@@ -116,6 +118,7 @@ export const KintoConnect: React.FC<{
       console.error('Failed to login:', error);
     }
   };
+  
 
   const handleIncreaseCounter = async () => {
     setLoading(true);
@@ -328,187 +331,51 @@ export const KintoConnect: React.FC<{
                 </Button>
               </CounterWrapper>
               <ThreeColumnLayout>
-                <Column>
-                  <ColumnContent>
-                    <ColumnHeader>Your Wallet</ColumnHeader>
-                    <WalletInfo>
-                      <WalletInfoRow>
-                        <WalletInfoLabel>Address:</WalletInfoLabel>
-                        <CompressedAddress address={accountInfo.walletAddress as Address} />
-                      </WalletInfoRow>
-                      <WalletInfoRow>
-                        <WalletInfoLabel>App Key:</WalletInfoLabel>
-                        <CompressedAddress address={accountInfo.appKey as Address} />
-                      </WalletInfoRow>
-                    </WalletInfo>
-                  </ColumnContent>
-                  {kycViewerInfo && (
-                    <KYCInfoDisplay kycInfo={kycViewerInfo} title="Your KYC Information" />
-                  )}
-                </Column>
-
-                <ArrowColumn>
-                  <ArrowIcon>➡️</ArrowIcon>
-                </ArrowColumn>
-
-                <Column>
-                  <ColumnContent>
-                    <ColumnHeader>Destination</ColumnHeader>
-                    <DestinationSection>
-                      <TextField
-                        fullWidth
-                        label="Recipient Address"
-                        value={recipientAddress}
-                        onChange={(e) => setRecipientAddress(e.target.value)}
-                      />
-                    </DestinationSection>
-                    {destinationKYCInfo && (
-                      <KYCInfoDisplay kycInfo={destinationKYCInfo} title="Destination KYC Information" />
-                    )}
-                  </ColumnContent>
-                </Column>
-
-                <ArrowColumn>
-                  <ArrowIcon>➡️</ArrowIcon>
-                </ArrowColumn>
-
-                <Column>
-                  <ColumnHeader>Transfer</ColumnHeader>
-                  <TransferSection>
-                    <FormControl fullWidth>
-                      <InputLabel id="token-select-label">Select Token</InputLabel>
-                      <Select
-                        labelId="token-select-label"
-                        id="token-select"
-                        value={selectedToken ? selectedToken.symbol : ''}
-                        label="Select Token"
-                        onChange={(e) => {
-                          const token = tokenBalances.find(t => t.symbol === e.target.value);
-                          setSelectedToken(token || null);
-                        }}
-                      >
-                        {tokenBalances.map((token, index) => (
-                          <MenuItem key={`erc20-${index}`} value={token.symbol}>
-                            {token.symbol} - Balance: {formatTokenBalance(token.balance, token.decimals)}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                    <TextField
-                      fullWidth
-                      label="Amount to Transfer"
-                      type="number"
-                      value={transferAmount}
-                      onChange={(e) => setTransferAmount(e.target.value)}
-                    />
-                    <Button 
-                      variant="contained" 
-                      color="primary" 
-                      onClick={handleTransfer} 
-                      disabled={loading || !selectedToken || !transferAmount || !recipientAddress}
-                    >
-                      {loading ? <CircularProgress size={24} /> : 'Transfer'}
-                    </Button>
-                  </TransferSection>
-                </Column>
+              <Column>
+              <TransferFundsSectionComponent
+                loading={loading}
+                tokenBalances={tokenBalances}
+                selectedToken={selectedToken}
+                setSelectedToken={setSelectedToken}
+                recipientAddress={recipientAddress}
+                setRecipientAddress={setRecipientAddress}
+                transferAmount={transferAmount}
+                setTransferAmount={setTransferAmount}
+                handleTransfer={handleTransfer}
+                formatTokenBalance={formatTokenBalance}
+              />
+            </Column>
               </ThreeColumnLayout>
-              <BudgetAllocationSection>
-                <ColumnHeader>Allocate Budget</ColumnHeader>
-                <BudgetAllocationContent>
-                  <TextField
-                    fullWidth
-                    label="Token Address"
-                    value={budgetTokenAddress}
-                    onChange={(e) => setBudgetTokenAddress(e.target.value)}
-                  />
-                  <Button 
-                    variant="contained" 
-                    color="primary" 
-                    onClick={handleInitializeBudgetAllocation} 
-                    disabled={loading || !budgetTokenAddress}
-                  >
-                    {loading ? <CircularProgress size={24} /> : 'Initialize Budget Allocation'}
-                  </Button>
+              {accountInfo && (
+                <BudgetAllocationSectionComponent
+                  loading={loading}
+                  budgetTokenAddress={budgetTokenAddress}
+                  setBudgetTokenAddress={setBudgetTokenAddress}
+                  budgetAmount={budgetAmount}
+                  setBudgetAmount={setBudgetAmount}
+                  authorizedUser={authorizedUser}
+                  setAuthorizedUser={setAuthorizedUser}
+                  handleInitializeBudgetAllocation={handleInitializeBudgetAllocation}
+                  handleAllocateBudget={handleAllocateBudget}
+                  handleAuthorizeUser={handleAuthorizeUser}
+                />
+              )}
 
-                  <TextField
-                    fullWidth
-                    label="Amount to Allocate"
-                    type="number"
-                    value={budgetAmount}
-                    onChange={(e) => setBudgetAmount(e.target.value)}
-                  />
-                  <Button 
-                    variant="contained" 
-                    color="primary" 
-                    onClick={handleAllocateBudget} 
-                    disabled={loading || !budgetAmount}
-                  >
-                    {loading ? <CircularProgress size={24} /> : 'Allocate Budget'}
-                  </Button>
+              {accountInfo && (<MonthlyTransferSectionComponent
+                loading={loading}
+                monthlyRecipient={monthlyRecipient}
+                setMonthlyRecipient={setMonthlyRecipient}
+                monthlyAmount={monthlyAmount}
+                setMonthlyAmount={setMonthlyAmount}
+                monthlyTokenAddress={monthlyTokenAddress}
+                setMonthlyTokenAddress={setMonthlyTokenAddress}
+                monthlyMaxAllowance={monthlyMaxAllowance}
+                setMonthlyMaxAllowance={setMonthlyMaxAllowance}
+                handleInitializeMonthlyTransfer={handleInitializeMonthlyTransfer}
+                handleExecuteMonthlyTransfer={handleExecuteMonthlyTransfer}
+              />
+            )}
 
-                  <TextField
-                    fullWidth
-                    label="Authorized User Address"
-                    value={authorizedUser}
-                    onChange={(e) => setAuthorizedUser(e.target.value)}
-                  />
-                  <Button 
-                    variant="contained" 
-                    color="primary" 
-                    onClick={handleAuthorizeUser} 
-                    disabled={loading || !authorizedUser}
-                  >
-                    {loading ? <CircularProgress size={24} /> : 'Authorize User'}
-                  </Button>
-                </BudgetAllocationContent>
-              </BudgetAllocationSection>
-              <MonthlyTransferSection>
-            <ColumnHeader>Monthly Transfer</ColumnHeader>
-            <MonthlyTransferContent>
-              <TextField
-                fullWidth
-                label="Recipient Address"
-                value={monthlyRecipient}
-                onChange={(e) => setMonthlyRecipient(e.target.value)}
-              />
-              <TextField
-                fullWidth
-                label="Monthly Amount"
-                type="number"
-                value={monthlyAmount}
-                onChange={(e) => setMonthlyAmount(e.target.value)}
-              />
-              <TextField
-                fullWidth
-                label="Token Address"
-                value={monthlyTokenAddress}
-                onChange={(e) => setMonthlyTokenAddress(e.target.value)}
-              />
-              <TextField
-                fullWidth
-                label="Max Allowance"
-                type="number"
-                value={monthlyMaxAllowance}
-                onChange={(e) => setMonthlyMaxAllowance(e.target.value)}
-              />
-              <Button 
-                variant="contained" 
-                color="primary" 
-                onClick={handleInitializeMonthlyTransfer} 
-                disabled={loading || !monthlyRecipient || !monthlyAmount || !monthlyTokenAddress || !monthlyMaxAllowance}
-              >
-                {loading ? <CircularProgress size={24} /> : 'Initialize Monthly Transfer'}
-              </Button>
-              <Button 
-                variant="contained" 
-                color="secondary" 
-                onClick={handleExecuteMonthlyTransfer} 
-                disabled={loading}
-              >
-                {loading ? <CircularProgress size={24} /> : 'Execute Monthly Transfer'}
-              </Button>
-            </MonthlyTransferContent>
-          </MonthlyTransferSection>
             </>
           ) : (
             <CircularProgress />
@@ -519,7 +386,6 @@ export const KintoConnect: React.FC<{
     </WholeWrapper>
   );
 };
-
 
 const MonthlyTransferSection = styled.div`
   display: flex;

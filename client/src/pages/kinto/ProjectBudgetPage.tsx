@@ -5,8 +5,7 @@ import ProjectBudget from './ProjectBudget';
 const ProjectBudgetPage = () => {
   return (
     <KintoConnect>
-    {(isAuthenticated) => isAuthenticated ? <ProjectBudget /> : null}
-  </KintoConnect>
+    </KintoConnect>
   );
 };
 
