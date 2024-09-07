@@ -6,9 +6,8 @@ import { useEffect, useState, useCallback } from "react";
 import CreateContract from "../../components/Modals/CreateContract";
 import useContract from "../../hooks/useContract";
 import { ContractData } from "../../utils/types";
-import { truncateText } from "../../utils/TextUtils";
-import AttestationApp from './SignProtocol'
-
+import { truncateText } from "../../utils";
+import AttestationApp from "./SignProtocol";
 
 export default function Contract() {
   const [show, setShow] = useState(false);
@@ -105,7 +104,7 @@ export default function Contract() {
           data={tableData}
           headers={headers}
         />
-        <AttestationApp/>
+        <AttestationApp />
       </div>
 
       {/* First Modal */}

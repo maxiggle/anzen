@@ -2,7 +2,6 @@ import galadrielABI from "../abis/galadriel.json"
 import employeeABI from "../abis/employee.json"
 
 export default {
-  web3AuthClientId: import.meta.env.VITE_APP_WEB3_AUTH_CLIENT_ID,
   galadrielPrivateKey: import.meta.env.VITE_APP_PRIVATE_KEY_GALADRIEL,
   employeePrivateKey: import.meta.env.VITE_APP_PRIVATE_KEY_EMPLOYEE,
   employerContractAddress: import.meta.env.VITE_APP_EMPLOYER_CONTRACT_ADDRESS,

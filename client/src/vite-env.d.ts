@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /// <reference types="vite/client" />
 
+import { ethers } from "ethers";
+
 interface Window {
   ethereum?: {
     isMetaMask?: boolean;
@@ -10,6 +12,6 @@ interface Window {
     selectedAddress: string | null;
     networkVersion: string;
     chainId: string;
-  };
+  } | ethers.Eip1193Provider;
 }
 
