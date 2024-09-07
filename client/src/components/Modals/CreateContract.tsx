@@ -5,9 +5,11 @@ import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import attestationService from "../../pages/dashboard/attestationJsonService";
 import useAttestationStore from "../../store/useAttestationStore";
-import {createSchema, createAttestation} from "../../pages/dashboard/SignProtocol"
-import useStartExtConversation from '../../hooks/useStartExtConversation';
-
+import {
+  createSchema,
+  createAttestation,
+} from "../../pages/dashboard/SignProtocol";
+import useStartExtConversation from "../../hooks/useStartExtConversation";
 
 export default function CreateContract() {
   const {
@@ -24,6 +26,9 @@ export default function CreateContract() {
   const [contractId, setContractId] = useState(0);
   const setAttestationJson = useAttestationStore(
     (state) => state.setAttestationJson
+  );
+  const setAttestationId = useAttestationStore(
+    (state) => state.setAttestationId
   );
   const printTarget = useRef<HTMLDivElement>(null);
 
@@ -57,17 +62,20 @@ export default function CreateContract() {
 
   const { startConversation } = useStartExtConversation();
 
-  const sendMessages = async (attestationId: string, signerAddresses: string[]) => {
+  const sendMessages = async (
+    attestationId: string,
+    signerAddresses: string[]
+  ) => {
     for (const signerAddress of signerAddresses) {
-        try {
-            const message = `You have a new attestation to sign. ID: ${attestationId}`;
-            const result = await startConversation(signerAddress, message);
-            console.log(`Message sent to ${signerAddress}:`, result);
-        } catch (error) {
-            console.error(`Error sending message to ${signerAddress}:`, error);
-        }
+      try {
+        const message = `You have a new attestation to sign. ID: ${attestationId}`;
+        const result = await startConversation(signerAddress, message);
+        console.log(`Message sent to ${signerAddress}:`, result);
+      } catch (error) {
+        console.error(`Error sending message to ${signerAddress}:`, error);
+      }
     }
-};
+  };
 
   useEffect(() => {
     if (isPrinting) {
@@ -144,32 +152,42 @@ export default function CreateContract() {
               onClick={async () => {
                 await generateAttestation(BigInt(contractId)).then(
                   async (id) => {
-                      console.log("Attestation ID:", id);
-                      await new Promise((resolve) => setTimeout(resolve, 45000));
-                      await getAttestation(id).then(async (json) => {
-                          console.log("Attestation JSON:", json);
-                          setAttestationJson(json);
-                          const parsedJson = JSON.parse(json.replace(/^```json\n|\n```$/g, ''));
-                          try {
-                              const idSchema = await createSchema(JSON.stringify(parsedJson), 1);
-                              console.log('the schema id is ', idSchema)
-                              if (!idSchema) {
-                                  throw new Error("Failed to create schema: idSchema is undefined");
-                              }
-                              await new Promise((resolve) => setTimeout(resolve, 10000));
-                              await createAttestation(
-                                  parsedJson, 
-                                  1, 
-                                  ['0x79edB24F41Ec139dde29B6e604ed52954d643858'], 
-                                  idSchema,
-                                  sendMessages
-                              );
-                          } catch (error) {
-                              console.error("Error in attestation process:", error);
-                          }
-                      });
+                    console.log("Attestation ID:", id);
+                    await new Promise((resolve) => setTimeout(resolve, 45000));
+                    await getAttestation(id).then(async (json) => {
+                      console.log("Attestation JSON:", json);
+                      setAttestationJson(json);
+                      const parsedJson = JSON.parse(
+                        json.replace(/^```json\n|\n```$/g, "")
+                      );
+                      try {
+                        const idSchema = await createSchema(
+                          JSON.stringify(parsedJson),
+                          1
+                        );
+                        console.log("the schema id is ", idSchema);
+                        if (!idSchema) {
+                          throw new Error(
+                            "Failed to create schema: idSchema is undefined"
+                          );
+                        }
+                        await new Promise((resolve) =>
+                          setTimeout(resolve, 10000)
+                        );
+                        const attestationObject = await createAttestation(
+                          parsedJson,
+                          1,
+                          ["0x79edB24F41Ec139dde29B6e604ed52954d643858"],
+                          idSchema,
+                          sendMessages
+                        );
+                        setAttestationId(attestationObject.attestationId);
+                      } catch (error) {
+                        console.error("Error in attestation process:", error);
+                      }
+                    });
                   }
-              );
+                );
               }}
             >
               Generate Attestation
