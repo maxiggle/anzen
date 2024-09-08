@@ -38,7 +38,7 @@ export default function Messages({ conversation, currentUserAddress }: IProps) {
 
   useEffect(() => {
     setStreamedMessages([...messages]);
-  }, [conversation, messages]);
+  }, [conversation]);
 
   if (error) {
     return "An error occurred while loading messages";

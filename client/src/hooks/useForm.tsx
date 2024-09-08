@@ -14,7 +14,7 @@ function useForm<T extends Record<string, string>>({
 }: IProps<T>) {
   const [values, setValues] = useState<T>((initialValues as T) || ({} as T));
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<T>({} as T);
 
   const setFormValue = (
     e: React.ChangeEvent<
@@ -36,14 +36,21 @@ function useForm<T extends Record<string, string>>({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log("Called");
 
     try {
       setIsSubmitting(true);
       const validationErrors = validateForm();
+
+      console.log(validationErrors);
+
       if (Object.keys(validationErrors).length > 0) {
-        setErrors(validationErrors);
+        setErrors(validationErrors as T);
+        setIsSubmitting(false);
         return;
       }
+      console.log("Calling action x");
+
       await action(values);
       success(values);
     } finally {
@@ -57,7 +64,7 @@ function useForm<T extends Record<string, string>>({
     setFormValue,
     isSubmitting,
     submit: handleSubmit,
-    clearErrors: () => setErrors({}),
+    clearErrors: () => setErrors({} as T),
   };
 }
 export default useForm;

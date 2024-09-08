@@ -8,7 +8,6 @@ import {
   Attestation,
 } from "@ethsign/sp-sdk";
 import { Address, privateKeyToAccount } from "viem/accounts";
-import { KintoAccountInfo } from "kinto-web-sdk";
 import {
   Button,
   Card,
@@ -22,7 +21,6 @@ import {
 import { ethers } from "ethers";
 import { fetchAccountInfo, fetchKYCViewerInfo } from "../kinto/KintoFunctions";
 import useStartExtConversation from "../../hooks/useStartExtConversation";
-import useAttestationStore from "../../store/useAttestationStore";
 
 const privateKey =
   "0xef060cb7d3f8ec2db57965356a38775806ed527dafe85a1ecee920f1673d4b0d";
@@ -81,78 +79,11 @@ export const createSchema = async (
 
     console.log("Schema created:", res);
     return res.schemaId;
-    //   setSchemaId(res.schemaId);
-    //   setStatus(`Schema created with ID: ${res.schemaId}`);
-    //   setDynamicFields(schemaItems);
   } catch (error) {
     console.error("Error creating schema:", error);
-    //   setStatus(`Error creating schema: ${(error as Error).message}`);
   }
 };
 
-//   export const [attestationId, setAttestationId] = useState<string>('');
-//   export const [accountInfoView, setAccountInfoView] = useState<KintoAccountInfo | undefined>(undefined);
-
-//   const { startConversation } = useStartExtConversation();
-
-//   export const createAttestation = async (contractData: any, signatureCount : any, signerPublicKeys : any,  : any) => {
-//     try {
-
-//         let attestationData: Record<string, any> = { ...contractData };
-
-//         console.log('the attestation data ',attestationData);
-
-//         if (signatureCount > 0) {
-//             for (let i = 1; i <= signatureCount; i++) {
-//                 if (!signerPublicKeys[i-1] || !ethers.isAddress(signerPublicKeys[i-1])) {
-//                     throw new Error(`Invalid public key for signer ${i}`);
-//                 }
-//                 attestationData[`signer${i}Signed`] = false;
-//                 attestationData[`signer${i}Address`] = signerPublicKeys[i-1];
-//                 attestationData[`signer${i}Signature`] = "0x";
-//             }
-//             attestationData.status = "pending_signatures";
-//         }
-
-//         console.log("Creating attestation with data:", attestationData);
-
-//         const initialAttestation = await client.createAttestation({
-//             idSchema,
-//             data: attestationData,
-//             indexingValue: '111',
-//             recipients: signerPublicKeys,
-//             linkedAttestationId: null,
-//         });
-
-//         console.log("Attestation created:", initialAttestation);
-//         console.log("Full attestation data:", attestationData);
-//         setAttestationId(initialAttestation.attestationId);
-//         // setStatus(`Initial attestation created with ID: ${initialAttestation.attestationId}`);
-
-//         const accountInfo = await fetchAccountInfo();
-//         // setAccountInfoView(accountInfo);
-//         // console.log('The account is', accountInfoView)
-//         const kycViewerInfo = await fetchKYCViewerInfo(accountInfo.walletAddress as Address);
-//         console.log('The wallets are', kycViewerInfo.getWalletOwners)
-
-//         for (const signerAddress of signerPublicKeys) {
-//             try {
-//               const message = `Nouvelle attestation à signer. ID: ${initialAttestation.attestationId}`;
-//               const result = await startConversation(signerAddress, message);
-//               console.log(`Message sent to ${signerAddress}:`, result);
-//             } catch (error) {
-//               console.error(`Error sending message to ${signerAddress}:`, error);
-//             }
-//           }
-
-//         // setStatus(prevStatus => `${prevStatus}. Signers have been notified.`);
-//     } catch (error) {
-//         console.error("Error creating attestation:", error);
-//         // setStatus(`Error creating attestation: ${(error as Error).message}`);
-//     }
-// };
-
-// const { startConversation } = useStartExtConversation();
 export const createAttestation = async (
   contractData: any,
   signatureCount: number,
@@ -169,7 +100,7 @@ export const createAttestation = async (
   attestationData: Record<string, any>;
 }> => {
   try {
-    let attestationData: Record<string, any> = { ...contractData };
+    const attestationData: Record<string, any> = { ...contractData };
 
     console.log("the attestation data ", attestationData);
 
@@ -250,19 +181,6 @@ const AttestationApp: React.FC = () => {
   const [dynamicFields, setDynamicFields] = useState<SchemaField[]>([]);
   const [signatureCount, setSignatureCount] = useState<number>(0);
   const [signerPublicKeys, setSignerPublicKeys] = useState<string[]>([]);
-  const [accountInfoView, setAccountInfoView] = useState<
-    KintoAccountInfo | undefined
-  >(undefined);
-  const [walletViewer, setwalletViewer] = useState([]);
-
-  interface KYCViewerInfo {
-    isIndividual: boolean;
-    isCorporate: boolean;
-    isKYC: boolean;
-    isSanctionsSafe: boolean;
-    getCountry: string;
-    getWalletOwners: Address[];
-  }
 
   const addSchemaField = () => {
     setSchemaFields([...schemaFields, { name: "", type: "" }]);
@@ -285,7 +203,7 @@ const AttestationApp: React.FC = () => {
 
   const createSchema = async () => {
     try {
-      let schemaItems: SchemaItem[] = schemaFields.map((field) => ({
+      const schemaItems: SchemaItem[] = schemaFields.map((field) => ({
         name: field.name,
         type: field.type as
           | "string"

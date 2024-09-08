@@ -12,6 +12,11 @@ export interface Message {
   content: { contentType: string; value: string }[];
 }
 
+export enum RegisterRole {
+  Contractor = "contractor",
+  Company = "company",
+}
+
 export enum ContractStatus {
   Pending,
   Completed,

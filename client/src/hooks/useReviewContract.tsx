@@ -11,7 +11,7 @@ export default function useReviewContract() {
   );
 
   async function reviewContract(
-    contractId: string,
+    contractId: number,
     prompt: string
   ): Promise<bigint> {
     const transaction = await contract.reviewContract(contractId, prompt);
@@ -28,14 +28,21 @@ export default function useReviewContract() {
       .filter((event: ethers.Log | null) => event !== null);
     console.log("events", events);
     console.log("events[0].args.contractId", events[0].args.contractId);
+    console.log("events[0].args.contractId", events[0].args);
     return events[0].args[0];
   }
 
   async function getReviewedContent(reviewId: number): Promise<string> {
     return contract.getReviewContent(reviewId);
   }
+  async function approveContract(contractId: number): Promise<void> {
+    const transaction = await contract.approveContract(contractId);
+    console.log("transaction", transaction);
+    await transaction.wait();
+  }
   return {
     reviewContract,
     getReviewedContent,
+    approveContract,
   };
 }

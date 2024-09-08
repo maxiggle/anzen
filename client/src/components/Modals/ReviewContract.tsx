@@ -4,22 +4,39 @@ import Button from "../UI/Button";
 import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import useReviewContract from "../../hooks/useReviewContract";
+import { ContractData } from "../../utils/types";
 
-export default function CreateContract() {
-  const { reviewContract, getReviewedContent } = useReviewContract();
+export default function ReviewContract({
+  contract,
+}: {
+  contract: ContractData;
+}) {
+  const { reviewContract, getReviewedContent, approveContract } =
+    useReviewContract();
   const [contractContent, setContractContent] = useState("");
   const [isReviewing, setIsReviewing] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const printTarget = useRef<HTMLDivElement>(null);
+  const [isApproved, setIsApproved] = useState(false);
+  const [reviewId, setReviewId] = useState(0);
+  const [userInput, setUserInput] = useState("");
 
   async function handleReviewContractAndReturnContent(): Promise<void> {
+    if (!contract) {
+      console.error("Contract is undefined");
+      return alert("Contract is not set");
+    }
+
     setIsReviewing(true);
     const contractId = await reviewContract(
-      "1",
-      "You are an expert AI lawyer hired by the employee to review their employment contract. Your task is to go through the contract line by line, explaining each clause in detail so that the employee can fully understand the terms and conditions. As you review the contract, identify and highlight any potential issues or clauses that could be unfavorable to the employee. Offer clear, unbiased advice on what each part means and how it might impact the employee's rights and obligations. Any other comments, reasoning, or dialogue that does not relate to explaining the contract should not be included."
+      Number(contract.contractId),
+      "You are an expert AI lawyer hired by the employee to review their employment contract. Your task is to go through the contract line by line, explaining each clause in detail so that the employee can fully understand the terms and conditions. As you review the contract, identify and highlight any potential issues or clauses that could be unfavorable to the employee. Offer clear, unbiased advice on what each part means and how it might impact the employee's rights and obligations. Any other comments, reasoning, or dialogue that does not relate to explaining the contract should not be included. You are to also explain any part of the contract based on query. " +
+        userInput
     );
-    console.log("contractId", contractId);
+    setReviewId(+contractId.toString());
+    console.log("contractId", +contractId.toString());
     const content = await getReviewedContent(+contractId.toString() - 1);
+    console.log("content", content);
     setContractContent(content);
     setIsReviewing(false);
   }
@@ -57,6 +74,10 @@ export default function CreateContract() {
     }
   }, [isPrinting, contractContent, printTarget]);
 
+  if (!contract) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       {contractContent === "" ? (
@@ -68,19 +89,40 @@ export default function CreateContract() {
               <label className="block mb-2">
                 Where do you need me to review:
               </label>
+              <div
+                ref={printTarget}
+                className="border-2 contract border-gray-300 max-h-[60vh] overflow-y-auto rounded-md p-4 mb-4"
+              >
+                <ReactMarkdown>
+                  {contractContent || contract.contractContent}
+                </ReactMarkdown>
+              </div>
+
               <textarea
                 className="w-full mb-3 p-3 border-2 rounded-lg"
                 cols={4}
                 rows={4}
+                placeholder="Ask AI about the contract"
+                onChange={(e) => setUserInput(e.target.value)}
+                value={userInput}
               ></textarea>
             </div>
-            <Button
-              variant="primary"
-              loading={isReviewing}
-              onClick={() => handleReviewContractAndReturnContent()}
-            >
-              Generate
-            </Button>
+            <div className="flex flex-row gap-3">
+              <Button
+                variant="outline"
+                loading={isReviewing}
+                onClick={() => handleReviewContractAndReturnContent()}
+              >
+                Generate
+              </Button>
+
+              <Button
+                onClick={() => approveContract(reviewId)}
+                variant="primary"
+              >
+                Approve
+              </Button>
+            </div>
           </div>
         </>
       ) : (
@@ -95,9 +137,9 @@ export default function CreateContract() {
             <ReactMarkdown>{contractContent}</ReactMarkdown>
           </div>
           <div className="flex gap-2 justify-end">
-            <Button variant="outline" loading={isReviewing} onClick={() => {}}>
+            {/* <Button variant="outline" loading={isReviewing} onClick={() => {}}>
               Regenerate
-            </Button>
+            </Button> */}
             <Button
               loading={isPrinting}
               variant="primary"
