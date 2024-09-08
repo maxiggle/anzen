@@ -25,8 +25,22 @@ export default {
         allowNull: true
       },
       publicKey: {
-        type: DataTypes.TEXT
-      }
+        type: DataTypes.TEXT,
+        unique: true,
+        allowNull: false
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false
+      },
+      updatedAt: {
+        type: DataTypes.DATE,
+        allowNull: false
+      },
+      role: {
+        type: DataTypes.TEXT,
+        allowNull: true
+      },
     })
   },
 
