@@ -7,7 +7,6 @@ import CreateContract from "../../components/Modals/CreateContract";
 import useContract from "../../hooks/useContract";
 import { ContractData, RegisterRole } from "../../utils/types";
 import { truncateText } from "../../utils";
-import AttestationApp from "./SignProtocol";
 import ReactMarkdown from "react-markdown";
 import { useProfileStore } from "../../store/useProfileStore";
 import ReviewContract from "../../components/Modals/ReviewContract";
@@ -148,7 +147,7 @@ export default function Contract() {
           data={tableData}
           headers={headers}
         />
-        <AttestationApp />
+        {/* <AttestationApp /> */}
       </div>
 
       {/* First Modal */}

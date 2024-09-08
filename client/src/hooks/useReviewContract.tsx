@@ -35,8 +35,11 @@ export default function useReviewContract() {
   async function getReviewedContent(reviewId: number): Promise<string> {
     return contract.getReviewContent(reviewId);
   }
-  async function approveContract(contractId: number): Promise<void> {
-    const transaction = await contract.approveContract(contractId);
+  async function approveContract(
+    contractId: number,
+    isApproved: boolean
+  ): Promise<void> {
+    const transaction = await contract.approveContract(contractId, isApproved);
     console.log("transaction", transaction);
     await transaction.wait();
   }
