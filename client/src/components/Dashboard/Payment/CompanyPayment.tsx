@@ -9,7 +9,6 @@ import {
 } from "../../../pages/kinto/BlockscoutUtils";
 import {
   kintoLogin,
-  fetchCounter,
   fetchKYCViewerInfo,
   fetchAccountInfo,
   fetchTokenBalances,

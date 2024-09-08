@@ -34,6 +34,8 @@ export const counterAddress = "0xCFE10657E75385F0c93Ee7e0Aec266Ae9382E0ED" as Ad
 export const paymentAddress = "0xCfe808D7994bB4b3741008B4c301688D4Cd4958C" as Address;
 export const KintoWalletFactory = "0x8a4720488CA32f1223ccFE5A087e250fE3BC5D75" as Address;
 
+// -------------------- LOGIN FUNCTIONS -------------------------------------------------
+
 export async function kintoLogin() {
   try {
     await kintoSDK.createNewWallet();
@@ -41,6 +43,9 @@ export async function kintoLogin() {
     console.error('Failed to login/signup:', error);
   }
 }
+
+// -------------------- TRANSFER FUND FUNCTIONS -------------------------------------------------
+
 
 export async function transferFunds(recipient: string, amount: bigint) {
   const fundTransferAbi = [
@@ -84,34 +89,8 @@ export async function transferFunds(recipient: string, amount: bigint) {
   }
 }
 
-export async function fetchCounter() {
-  const client = createPublicClient({
-    chain: kinto,
-    transport: http(),
-  });
-  const counterContract = getContract({
-    address: counterAddress as Address,
-    abi: counterAbi,
-    client: { public: client }
-  });
-  const count = await counterContract.read.count([]) as BigInt;
-  return Number(count.toString());
-}
+// -------------------- FETCHING INFO FUNCTIONS -------------------------------------------------
 
-export async function increaseCounter() {
-  const data = encodeFunctionData({
-    abi: counterAbi,
-    functionName: 'increment',
-    args: []
-  });
-  try {
-    await kintoSDK.sendTransaction([{ to: counterAddress, data, value: BigInt(0) }]);
-    return await fetchCounter();
-  } catch (error) {
-    console.error('Failed to increase counter:', error);
-    throw error;
-  }
-}
 
 export async function fetchKYCViewerInfo(walletAddress: Address) {
   const client = createPublicClient({
@@ -190,6 +169,9 @@ export async function fetchDestinationKYC(recipientAddress: Address) {
   const kycViewer = KYCViewerService.getInstance();
   return await kycViewer.fetchKYCInfo(recipientAddress);
 }
+
+// -------------------- MONTHLY TRANSFER FUNCTIONS -------------------------------------------------
+
 
 const monthlyTransferAbi = parseAbi([
   'function initializeAndApprove(address _recipient, uint256 _amount, address _tokenAddress, uint256 _maxAllowance)',
@@ -384,6 +366,9 @@ export async function setupAndRunMonthlyTransfer(
   }
 }
 
+// -------------------- BUDGET ALLOCATION FUNCTIONS -------------------------------------------------
+
+
 const budgetAllocationAbi = parseAbi([
     'function initialize(address _tokenAddress)',
     'function allocateBudget(uint256 _amount)',
@@ -521,6 +506,10 @@ const budgetAllocationAbi = parseAbi([
     }
   }
 
+
+  // -------------------- WALLET RECOVERY FUNCTIONS -------------------------------------------------
+
+
   const walletRecoveryAbi = [
     {
       "inputs": [
@@ -650,6 +639,105 @@ const budgetAllocationAbi = parseAbi([
       return response;
     } catch (error) {
       console.error('Failed to change wallet recoverer:', error);
+      throw error;
+    }
+  }
+
+  // -------------------- GOVERNANCE FUNCTIONS -------------------------------------------------
+
+  const engenGovernanceAbi = parseAbi([
+    'function votingDelay() public view returns (uint256)',
+    'function votingPeriod() public view returns (uint256)',
+    'function proposalThreshold() public view returns (uint256)',
+    'function quorum(uint256 blockNumber) public view returns (uint256)',
+    'function propose(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) public returns (uint256)',
+    'function castVote(uint256 proposalId, uint8 support) public returns (uint256)',
+    'function execute(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, bytes32 descriptionHash) public payable returns (uint256)'
+  ]);
+  
+  export const engenGovernanceAddress = "0x27926a991BB0193Bf5b679bdb6Cb3d3B6581084E" as Address;
+  
+  async function sendViewTransaction(functionName: string, args: any[] = []) {
+    const data = encodeFunctionData({
+      abi: engenGovernanceAbi,
+      functionName,
+      args
+    });
+  
+    try {
+      const response = await kintoSDK.sendTransaction([{ to: engenGovernanceAddress, data, value: BigInt(0) }]);
+      // Decode the response
+      const decodedResponse = decodeAbiParameters([{ type: 'uint256' }], response as `0x${string}`);
+      return decodedResponse[0];
+    } catch (error) {
+      console.error(`Error calling ${functionName}:`, error);
+      throw error;
+    }
+  }
+  
+  export async function getVotingDelay() {
+    return sendViewTransaction('votingDelay');
+  }
+  
+  export async function getVotingPeriod() {
+    return sendViewTransaction('votingPeriod');
+  }
+  
+  export async function getProposalThreshold() {
+    return sendViewTransaction('proposalThreshold');
+  }
+  
+  export async function getQuorum(blockNumber: bigint) {
+    return sendViewTransaction('quorum', [blockNumber]);
+  }
+  
+  export async function createProposal(targets: Address[], values: bigint[], calldatas: string[], description: string) {
+    const data = encodeFunctionData({
+      abi: engenGovernanceAbi,
+      functionName: 'propose',
+      args: [targets, values, calldatas, description]
+    });
+  
+    try {
+      const response = await kintoSDK.sendTransaction([{ to: engenGovernanceAddress, data, value: BigInt(0) }]);
+      console.log('Proposal created successfully:', response);
+      return response;
+    } catch (error) {
+      console.error('Error creating proposal:', error);
+      throw error;
+    }
+  }
+  
+  export async function castVote(proposalId: bigint, support: number) {
+    const data = encodeFunctionData({
+      abi: engenGovernanceAbi,
+      functionName: 'castVote',
+      args: [proposalId, support]
+    });
+  
+    try {
+      const response = await kintoSDK.sendTransaction([{ to: engenGovernanceAddress, data, value: BigInt(0) }]);
+      console.log('Vote cast successfully:', response);
+      return response;
+    } catch (error) {
+      console.error('Error casting vote:', error);
+      throw error;
+    }
+  }
+  
+  export async function executeProposal(targets: Address[], values: bigint[], calldatas: string[], descriptionHash: string) {
+    const data = encodeFunctionData({
+      abi: engenGovernanceAbi,
+      functionName: 'execute',
+      args: [targets, values, calldatas, descriptionHash]
+    });
+  
+    try {
+      const response = await kintoSDK.sendTransaction([{ to: engenGovernanceAddress, data, value: BigInt(0) }]);
+      console.log('Proposal executed successfully:', response);
+      return response;
+    } catch (error) {
+      console.error('Error executing proposal:', error);
       throw error;
     }
   }

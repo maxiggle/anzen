@@ -20,8 +20,6 @@ import { KintoAccountInfo } from 'kinto-web-sdk';
 import { TokenBalance, formatTokenBalance } from './BlockscoutUtils';
 import {
   kintoLogin,
-  fetchCounter,
-  increaseCounter,
   fetchKYCViewerInfo,
   fetchAccountInfo,
   fetchTokenBalances,
@@ -151,7 +149,6 @@ export const KintoConnect: React.FC<KintoConnectProps> = ({ children, showNaviga
   useEffect(() => {
     const initializeApp = async () => {
       await fetchAccountInfo().then(setAccountInfo);
-      await fetchCounter().then(setCounter);
     };
     initializeApp();
   }, []);
@@ -182,18 +179,18 @@ export const KintoConnect: React.FC<KintoConnectProps> = ({ children, showNaviga
   };
   
 
-  const handleIncreaseCounter = async () => {
-    setLoading(true);
-    try {
-      // const newCounter = await increaseCounter();
-      // setCounter(newCounter);
-      await initializeBudgetAllocation(tokenAddress);
-    } catch (error) {
-      console.error('Failed to increase counter:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const handleIncreaseCounter = async () => {
+  //   setLoading(true);
+  //   try {
+  //     // const newCounter = await increaseCounter();
+  //     // setCounter(newCounter);
+  //     await initializeBudgetAllocation(tokenAddress);
+  //   } catch (error) {
+  //     console.error('Failed to increase counter:', error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleTransfer = async () => {
     if (!selectedToken || !recipientAddress || !transferAmount || !accountInfo?.walletAddress) {
@@ -493,9 +490,9 @@ export const KintoConnect: React.FC<KintoConnectProps> = ({ children, showNaviga
                     <WalletRowValue>{counter}</WalletRowValue>
                   </WalletRow>
                 </WalletRows>
-                <Button variant="contained" color="primary" onClick={handleIncreaseCounter} disabled={loading}>
+                {/* <Button variant="contained" color="primary" onClick={handleIncreaseCounter} disabled={loading}>
                   {loading ? <CircularProgress size={24} /> : 'Increase Counter'}
-                </Button>
+                </Button> */}
               </>
             )}
               </CounterWrapper>
