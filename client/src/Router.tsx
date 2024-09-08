@@ -16,8 +16,8 @@ import DashboardSettings from "./pages/dashboard/Settings";
 import DashboardChat from "./pages/dashboard/Chat";
 import EmployeeDashBoard from "./pages/dashboard/Employeedashboard";
 import KintoConnect from "./pages/kinto/KintoConnect";
-// import ProjectBudget from "./pages/kinto/ProjectBudget";
-// import SignProtocol from "./pages/dashboard/SignProtocol"
+import RecoverWallet from "./pages/kinto/RecoverWallet";
+import AccountInfoPage from "./pages/kinto/AccountInfoPage"
 
 const App: React.FC = () => {
   return (
@@ -38,8 +38,9 @@ const App: React.FC = () => {
           <Route path="/dashboard/support" element={<DashboardSupport />} />
           <Route path="/dashboard/settings" element={<DashboardSettings />} />
           <Route path="/dashboard/employee" element={<EmployeeDashBoard />} />
-          <Route path="/kinto/KintoConnect" element={<KintoConnect/>} />
-          {/* <Route path="/kinto/ProjectBudget" element={<ProjectBudget/>} /> */}
+          <Route path="/kinto/KintoConnect" element={<KintoConnect />} />
+          <Route path="/kinto/RecoverWallet" element={<RecoverWallet/>} />
+          <Route path="/kinto/AccountInfoPage" element={<AccountInfoPage/>} />
         </Route>
       </Routes>
     </Router>

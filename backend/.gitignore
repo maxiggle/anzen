@@ -1,0 +1,37 @@
+# Compiled output
+dist
+tmp
+out-tsc
+bazel-out
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Angular
+.angular
+
+# Visual Studio
+.vscode/
+.idea/
+.project
+.classpath
+*.sublime-workspace
+
+# Miscellaneous
+.sass-cache/
+connect.lock
+coverage
+libpeerconnection.log
+package-lock.json
+testem.log
+typings
+
+database.sqlite
+db.sqlite
+src/database/*.sqlite
+
+# System files
+.DS_Store
+Thumbs.db

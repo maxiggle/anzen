@@ -8,7 +8,7 @@ import contractsJSON from './abis/7887.json';
 import { KYCViewerService } from './KYCViewerService';
 
 export const counterAbi = [{ "type": "constructor", "inputs": [], "stateMutability": "nonpayable" }, { "type": "function", "name": "count", "inputs": [], "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }], "stateMutability": "view" }, { "type": "function", "name": "increment", "inputs": [], "outputs": [], "stateMutability": "nonpayable" }];
-//test
+
 export const kinto = defineChain({
   id: 7887,
   name: 'Kinto',
@@ -32,6 +32,7 @@ export const kinto = defineChain({
 export const kintoSDK = createKintoSDK('0xCFE10657E75385F0c93Ee7e0Aec266Ae9382E0ED');
 export const counterAddress = "0xCFE10657E75385F0c93Ee7e0Aec266Ae9382E0ED" as Address;
 export const paymentAddress = "0xCfe808D7994bB4b3741008B4c301688D4Cd4958C" as Address;
+export const KintoWalletFactory = "0x8a4720488CA32f1223ccFE5A087e250fE3BC5D75" as Address;
 
 export async function kintoLogin() {
   try {
@@ -516,6 +517,139 @@ const budgetAllocationAbi = parseAbi([
       return allocation;
     } catch (error) {
       console.error('Échec de la récupération de l\'allocation de l\'utilisateur:', error);
+      throw error;
+    }
+  }
+
+  const walletRecoveryAbi = [
+    {
+      "inputs": [
+        {
+          "internalType": "address payable",
+          "name": "wallet",
+          "type": "address"
+        }
+      ],
+      "name": "startWalletRecovery",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address payable",
+          "name": "wallet",
+          "type": "address"
+        },
+        {
+          "internalType": "address[]",
+          "name": "newSigners",
+          "type": "address[]"
+        }
+      ],
+      "name": "completeWalletRecovery",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "wallet",
+          "type": "address"
+        }
+      ],
+      "name": "approveWalletRecovery",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address payable",
+          "name": "wallet",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_newRecoverer",
+          "type": "address"
+        }
+      ],
+      "name": "changeWalletRecoverer",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ];
+  
+  export async function startWalletRecovery(wallet: string) {
+    const data = encodeFunctionData({
+      abi: walletRecoveryAbi,
+      functionName: 'startWalletRecovery',
+      args: [wallet]
+    });
+  
+    try {
+      const response = await kintoSDK.sendTransaction([{ to: KintoWalletFactory, data, value: BigInt(0) }]);
+      console.log('Wallet recovery started:', response);
+      return response;
+    } catch (error) {
+      console.error('Failed to start wallet recovery:', error);
+      throw error;
+    }
+  }
+  
+  export async function completeWalletRecovery(wallet: string, newSigners: string[]) {
+    const data = encodeFunctionData({
+      abi: walletRecoveryAbi,
+      functionName: 'completeWalletRecovery',
+      args: [wallet, newSigners]
+    });
+  
+    try {
+      const response = await kintoSDK.sendTransaction([{ to: KintoWalletFactory, data, value: BigInt(0) }]);
+      console.log('Wallet recovery completed:', response);
+      return response;
+    } catch (error) {
+      console.error('Failed to complete wallet recovery:', error);
+      throw error;
+    }
+  }
+  
+  export async function approveWalletRecovery(wallet: string) {
+    const data = encodeFunctionData({
+      abi: walletRecoveryAbi,
+      functionName: 'approveWalletRecovery',
+      args: [wallet]
+    });
+  
+    try {
+      const response = await kintoSDK.sendTransaction([{ to: KintoWalletFactory, data, value: BigInt(0) }]);
+      console.log('Wallet recovery approved:', response);
+      return response;
+    } catch (error) {
+      console.error('Failed to approve wallet recovery:', error);
+      throw error;
+    }
+  }
+  
+  export async function changeWalletRecoverer(wallet: string, newRecoverer: string) {
+    const data = encodeFunctionData({
+      abi: walletRecoveryAbi,
+      functionName: 'changeWalletRecoverer',
+      args: [wallet, newRecoverer]
+    });
+  
+    try {
+      const response = await kintoSDK.sendTransaction([{ to: KintoWalletFactory, data, value: BigInt(0) }]);
+      console.log('Wallet recoverer changed:', response);
+      return response;
+    } catch (error) {
+      console.error('Failed to change wallet recoverer:', error);
       throw error;
     }
   }

@@ -43,11 +43,11 @@ export default function Navbar() {
               </ELink>
             </li>
             <li>
-              <ELink to={"/dashboard/invoices"} className="dashboard__nav_item">
+              <ELink to={"/kinto/kintoconnect"} className="dashboard__nav_item">
                 <span className="material-symbols-outlined -mt-[2px]">
                   paid
                 </span>
-                Invoices
+                Finance
               </ELink>
             </li>
             <li>
@@ -70,7 +70,7 @@ export default function Navbar() {
               Help Center
             </li>
             <li>
-              <ELink to={"/dashboard/support"} className="dashboard__nav_item">
+              <ELink to={"/kinto/RecoverWallet"} className="dashboard__nav_item">
                 <span className="material-symbols-outlined -mt-[2px]">
                   contact_support
                 </span>
@@ -82,6 +82,7 @@ export default function Navbar() {
       </div>
       <div className="bg-gray-50/80 px-6 -mx-4 cursor-pointer py-5 border-t">
         <div className="flex flex-row justify-between">
+        <a href="https://dev.kinto.xyz:3001/kinto/AccountInfoPage" className="block">
           <div className="flex flex-row gap-3">
             <div>
               <div className="w-[40px] rounded-md bg-purple-100 font-bold text-purple-900 flex items-center justify-center aspect-square">
@@ -89,10 +90,11 @@ export default function Navbar() {
               </div>
             </div>
             <div>
-              <div className="font-semibold">Godwin</div>
+              <div className="font-semibold">Sami</div>
               <p className="text-xs text-gray-500">Contractor</p>
             </div>
           </div>
+        </a>
           <button onClick={() => setShowDropdown((e) => !e)}>
             <span className="material-symbols-outlined">more_horiz</span>
           </button>

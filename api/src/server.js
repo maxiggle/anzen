@@ -217,19 +217,22 @@ app.post("/api/attestationJson", authenticate, async (req, res) => {
     const userId = req.user.userId;
     const attestationJson = req.body;
     const jsonString = JSON.stringify(attestationJson);
-    await db.run("INSERT INTO attestations (user_Id,json_data) VALUES (?,?)", [userId, jsonString]);
-    res.json({ 
+    await db.run("INSERT INTO attestations (user_Id,json_data) VALUES (?,?)", [
+      userId,
+      jsonString,
+    ]);
+    res.json({
       message: "Attestation JSON saved successfully",
-      attestationId: result.lastID
+      attestationId: result.lastID,
+    });
+  } catch (error) {
+    console.error("Error saving attestation JSON:", error);
+    res.status(500).json({
+      message: "Failed to save attestation JSON",
+      error: error.message,
     });
   }
-  catch (error) {
-    console.error("Error saving attestation JSON:", error);
-    res
-      .status(500)
-      .json({ message: "Failed to save attestation JSON", error: error.message });
-  }
-})
+});
 
 // Start server
 const PORT = process.env.PORT || 5000;

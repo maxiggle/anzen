@@ -10,6 +10,12 @@ export function isLinkActive(location: ReturnType<typeof useLocation>) {
   };
 }
 
+export function truncateText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + '...';
+}
+
+
 export function clsx(obj: Record<string, boolean> | string[] | (string | undefined | boolean)[] = []): string {
   if (Array.isArray(obj)) {
     return obj.filter((e) => e).join(" ");
