@@ -11,20 +11,20 @@ async function main() {
   //   `Automated contract deployed to ${automatedContract.target}`
   // );
 
-  const textStorage = await  ethers.deployContract("TextStorage");
-  await textStorage.waitForDeployment();
-  console.log(
-    `Text storage deployed to ${textStorage.target}`
-   );
+  // const textStorage = await  ethers.deployContract("TextStorage");
+  // await textStorage.waitForDeployment();
+  // console.log(
+  //   `Text storage deployed to ${textStorage.target}`
+  //  );
 
-  const employer = await  ethers.deployContract("EmployerContract",[oracleAddress, textStorage.target], {});
-  await employer.waitForDeployment();
-  console.log(
-   `employer contract deployed to ${employer.target}`
-  );
+  // const employer = await  ethers.deployContract("EmployerContract",[oracleAddress, textStorage.target], {});
+  // await employer.waitForDeployment();
+  // console.log(
+  //  `employer contract deployed to ${employer.target}`
+  // );
 
-  const employerTarget = "0xa676B5B3afB00C838B42e0aaBa56753a923aB9EF";
-  const employee = await  ethers.deployContract("EmployeeContract", [oracleAddress, employer.target, textStorage.target], {});
+  const employerTarget = "0xeD14f90A55F3E29B4F60B3563fC46374e83A0da8";
+  const employee = await  ethers.deployContract("EmployeeContract", [oracleAddress, employerTarget, "0x5A4890424E4f2bD0d9ff8E3eAD2F1BE2991CD0C6"], {});
   await employee.waitForDeployment();
   console.log(
     `employee contract deployed to ${employee.target}`

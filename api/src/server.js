@@ -212,7 +212,7 @@ app.post("/api/notify-signers", async (req, res) => {
   }
 });
 
-app.post("/api/attestationJson", authenticate, async (req, res) => {
+app.post("/api/attestationJson", authenticate, async (req, res, next) => {
   try {
     const userId = req.user.userId;
     const attestationJson = req.body;

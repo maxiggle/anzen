@@ -16,6 +16,7 @@ import {
   LineElement,
   Title,
 } from "chart.js";
+import { useProfileStore } from "../../store/useProfileStore";
 
 ChartJS.register(
   ArcElement,
@@ -29,11 +30,14 @@ ChartJS.register(
 );
 
 export default function Index() {
+  const user = useProfileStore((state) => state.user);
   return (
     <div>
       <header className="flex flex-row mb-6 justify-between">
         <div>
-          <h2 className="font-semibold text-2xl">Hello, Godwin 👋</h2>
+          <h2 className="font-semibold text-2xl">
+            Hello, {user?.firstName} 👋
+          </h2>
           <p className="text-gray-700">Here's what's going on today.</p>
         </div>
         <div>

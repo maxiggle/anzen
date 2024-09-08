@@ -25,5 +25,8 @@ export default sq.define('User', {
   },
   publicKey: {
     type: DataTypes.TEXT
+  },
+  role: {
+    type: DataTypes.TEXT
   }
 });

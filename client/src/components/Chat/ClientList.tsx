@@ -85,22 +85,6 @@ export default function ClientList({ setConversation, setNewAddress }: IProps) {
     return (
       <div className="flex items-center justify-center h-full max-h-[300px] bg-white p-4">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        <svg
-          className="animate-pulse ml-3"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M12 6V8M12 12V14M12 18V20M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"
-            stroke="#4B5563"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
         <span className="ml-2 text-gray-600 font-medium">
           Loading conversations...
         </span>

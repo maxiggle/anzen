@@ -1,8 +1,11 @@
 import { useState } from "react";
 import ELink from "../Extended/Link";
+import { useProfileStore } from "../../store/useProfileStore";
+import { RegisterRole } from "../../utils/types";
 
 export default function Navbar() {
   const [showDropdown, setShowDropdown] = useState(false);
+  const user = useProfileStore((state) => state.user);
   return (
     <div className="flex flex-col  h-full justify-between">
       <div>
@@ -58,14 +61,19 @@ export default function Navbar() {
                 Chats
               </ELink>
             </li>
-            <li>
-              <ELink to={"/dashboard/employee"} className="dashboard__nav_item">
-                <span className="material-symbols-outlined -mt-[2px]">
-                  person_apron
-                </span>
-                Employee
-              </ELink>
-            </li>
+            {user?.role === RegisterRole.Contractor && (
+              <li>
+                <ELink
+                  to={"/dashboard/employee"}
+                  className="dashboard__nav_item"
+                >
+                  <span className="material-symbols-outlined -mt-[2px]">
+                    person_apron
+                  </span>
+                  Employee
+                </ELink>
+              </li>
+            )}
             <li className="px-4 uppercase text-xs text-gray-400 mt-6 font-semibold">
               Help Center
             </li>

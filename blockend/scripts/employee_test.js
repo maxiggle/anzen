@@ -452,7 +452,7 @@ const employeeAbi = [
 ];
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY_GALADRIEL;
-const contractAddress = "0x4cCf3897F978d58074cFb7C212c13Fc3e460B641";
+const contractAddress = "0x87a70565A531Fbf986b955c92BC7bEc860c7461B";
 const RPC_URL = "https://devnet.galadriel.com/"
 const provider = new ethers.JsonRpcProvider(RPC_URL);
 const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
@@ -515,13 +515,17 @@ async function getExtractedText(contractId) {
 }
 
 async function main() {
+  // const reviewId = await reviewContract(2, "You are an expert AI lawyer hired by the employee to review their employment contract. Your task is to go through the contract line by line, explaining each clause in detail so that the employee can fully understand the terms and conditions. As you review the contract, identify and highlight any potential issues or clauses that could be unfavorable to the employee. Offer clear, unbiased advice on what each part means and how it might impact the employee's rights and obligations. Any other comments, reasoning, or dialogue that does not relate to explaining the contract should not be included.");
+  // const content = await viewGeneratedContract(2);
+  // console.log("the content is ", content);
+  await getReviewContent(4);
   // await extractTextFromGeneratedContract(1);
 
   // Add a delay to allow time for the extraction process
   // console.log("Waiting for extraction to complete...");
   // await new Promise(resolve => setTimeout(resolve, 30000)); // 30 seconds delay
 
-  const extractedText = await getExtractedText(2);
+  // const extractedText = await getExtractedText(2);
   // console.log("Extracted text:", extractedText);
 }
 
@@ -530,7 +534,7 @@ async function main() {
 // });
 
 // async function main() {
-// //  const content = await viewGeneratedContract(1);
+ 
 // //  console.log(content);
 //   // const id =  await reviewContract(1, "review this contract and explain all the terms in details");
 //   // console.log("reviewed content:", content)

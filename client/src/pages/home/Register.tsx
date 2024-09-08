@@ -113,6 +113,7 @@ const Register: React.FC = () => {
       if (accountInfo.exists && kycViewerInfo?.isKYC) {
         console.log("Login successful, redirecting to dashboard");
         setSuccess("Login successful! Redirecting to dashboard...");
+        localStorage.setItem("userWalletAddress", accountInfo.walletAddress);
         setIsLoading(false);
         navigate("/dashboard");
       } else if (accountInfo.exists && !kycViewerInfo?.isKYC) {

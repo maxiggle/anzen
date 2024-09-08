@@ -1,7 +1,7 @@
 // App.tsx ou WalletPage.tsx
 import React from 'react';
 import { KintoConnect } from './KintoConnect';
-import {WalletRecoveryProcess, AccountInfo} from './KintoConnect';
+import {WalletRecoveryProcess} from './KintoConnect';
 
 const RecoverWallet: React.FC = () => {
   return (

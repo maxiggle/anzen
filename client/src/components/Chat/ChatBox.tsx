@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { ChangeEvent, useCallback, useState } from "react";
 import Button from "../UI/Button";
 import EmojiSelect from "../UI/EmojiSelect";
@@ -8,9 +9,15 @@ import {
 } from "@xmtp/react-sdk";
 import Messages from "./Messages";
 import useStartExtConversation from "../../hooks/useStartExtConversation";
-import { SignProtocolClient, SpMode, EvmChains, Attestation } from "@ethsign/sp-sdk";
-import { ethers } from 'ethers';
+import {
+  SignProtocolClient,
+  SpMode,
+  EvmChains,
+  Attestation,
+} from "@ethsign/sp-sdk";
+import { ethers } from "ethers";
 import { privateKeyToAccount } from "viem/accounts";
+import config from "../../utils/config";
 
 interface IProps {
   userAddress: string;
@@ -19,22 +26,24 @@ interface IProps {
   setConversation: (c: CachedConversation | Conversation) => void;
 }
 
-const privateKey = "0xef060cb7d3f8ec2db57965356a38775806ed527dafe85a1ecee920f1673d4b0d";
-
 const client = new SignProtocolClient(SpMode.OnChain, {
-    chain: EvmChains.baseSepolia,
-    account: privateKeyToAccount(privateKey),
+  chain: EvmChains.baseSepolia,
+  account: privateKeyToAccount(config.signProtocol.privateKey as `0x${string}`),
 });
+
 const convertBigIntToString = (obj: any): any => {
-  if (typeof obj === 'bigint') {
+  if (typeof obj === "bigint") {
     return obj.toString();
   }
   if (Array.isArray(obj)) {
     return obj.map(convertBigIntToString);
   }
-  if (typeof obj === 'object' && obj !== null) {
+  if (typeof obj === "object" && obj !== null) {
     return Object.fromEntries(
-      Object.entries(obj).map(([key, value]) => [key, convertBigIntToString(value)])
+      Object.entries(obj).map(([key, value]) => [
+        key,
+        convertBigIntToString(value),
+      ])
     );
   }
   return obj;
@@ -50,7 +59,8 @@ export default function ChatBox({
   const [isSending, setIsSending] = useState(false);
   const [message, setMessage] = useState("");
   const { startConversation } = useStartExtConversation();
-  const [attestationToSign, setAttestationToSign] = useState<Attestation | null>(null);
+  const [attestationToSign, setAttestationToSign] =
+    useState<Attestation | null>(null);
   const [attestationId, setAttestationId] = useState("");
 
   const handleStartConversation = useCallback(
@@ -113,9 +123,15 @@ export default function ChatBox({
       const attestation = await client.getAttestation(attestationId);
       if (attestation) {
         setAttestationToSign(convertBigIntToString(attestation));
-        await sendMessage(conversation, `Requesting signature for attestation: ${attestationId}`);
+        await sendMessage(
+          conversation,
+          `Requesting signature for attestation: ${attestationId}`
+        );
       } else {
-        await sendMessage(conversation, `Attestation ${attestationId} not found.`);
+        await sendMessage(
+          conversation,
+          `Attestation ${attestationId} not found.`
+        );
       }
     } catch (error) {
       console.error("Error fetching attestation:", error);
@@ -129,11 +145,11 @@ export default function ChatBox({
     if (!attestationToSign) return;
 
     try {
-      if (typeof window.ethereum === 'undefined') {
+      if (typeof window.ethereum === "undefined") {
         throw new Error("MetaMask is not installed");
       }
 
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      await window.ethereum.request({ method: "eth_requestAccounts" });
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const signerAddress = await signer.getAddress();
@@ -157,14 +173,18 @@ export default function ChatBox({
       console.log("Attestation Schema:", schema);
 
       // Compare the fields in the schema with the fields in the updated data
-      const schemaFields = schema.data.map(item => item.name);
+      const schemaFields = schema.data.map((item) => item.name);
       const dataFields = Object.keys(updatedData);
 
       console.log("Schema Fields:", schemaFields);
       console.log("Data Fields:", dataFields);
 
-      const missingFields = schemaFields.filter(field => !dataFields.includes(field));
-      const extraFields = dataFields.filter(field => !schemaFields.includes(field));
+      const missingFields = schemaFields.filter(
+        (field) => !dataFields.includes(field)
+      );
+      const extraFields = dataFields.filter(
+        (field) => !schemaFields.includes(field)
+      );
 
       console.log("Missing Fields:", missingFields);
       console.log("Extra Fields:", extraFields);
@@ -172,19 +192,25 @@ export default function ChatBox({
       const updatedAttestation = await client.createAttestation({
         schemaId: attestationToSign.schemaId,
         data: updatedData,
-        indexingValue: attestationToSign.indexingValue || '0',
+        indexingValue: attestationToSign.indexingValue || "0",
         linkedAttestationId: attestationToSign.linkedAttestationId,
-        replacementId: attestationToSign.attestationId
+        replacementId: attestationToSign.attestationId,
       });
 
       console.log("Updated Attestation:", updatedAttestation);
 
-      await sendMessage(conversation, `Attestation ${attestationToSign.attestationId} signed successfully!`);
+      await sendMessage(
+        conversation,
+        `Attestation ${attestationToSign.attestationId} signed successfully!`
+      );
       setAttestationToSign(null);
       setAttestationId("");
     } catch (error) {
       console.error("Error signing attestation:", error);
-      await sendMessage(conversation, `Error signing attestation: ${(error as Error).message}`);
+      await sendMessage(
+        conversation,
+        `Error signing attestation: ${(error as Error).message}`
+      );
     }
   };
 
@@ -259,8 +285,12 @@ export default function ChatBox({
           <h3 className="font-bold">Attestation to Sign:</h3>
           <p className="mb-2">ID: {attestationToSign.attestationId}</p>
           <p className="mb-2">Schema ID: {attestationToSign.schemaId}</p>
-          <p className="mb-2">Data: {JSON.stringify(attestationToSign.data, null, 2)}</p>
-          <Button onClick={handleSignAttestation} variant="primary">Sign with MetaMask</Button>
+          <p className="mb-2">
+            Data: {JSON.stringify(attestationToSign.data, null, 2)}
+          </p>
+          <Button onClick={handleSignAttestation} variant="primary">
+            Sign with MetaMask
+          </Button>
         </div>
       )}
 
@@ -285,7 +315,7 @@ export default function ChatBox({
 
           <div className="mr-2 mt-1 text-gray-500 hover:text-gray-700">
             <EmojiSelect
-              onEmojiSelect={(emoji) => setMessage(prev => prev + emoji)}
+              onEmojiSelect={(emoji) => setMessage((prev) => prev + emoji)}
             />
           </div>
           <input

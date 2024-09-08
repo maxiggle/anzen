@@ -17,7 +17,7 @@ export default {
         }
       },
       json_data: {
-        type: DataTypes.TEXT
+        type: DataTypes.JSON
       },
       created_at: {
         type: DataTypes.DATE,
